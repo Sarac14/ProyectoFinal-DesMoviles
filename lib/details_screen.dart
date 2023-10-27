@@ -1,14 +1,15 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
+import 'home_screen.dart';
+
 class DetailsScreen extends StatefulWidget {
 
-  final pokemonDetail;
+  final Pokemon pokemon;
   final Color color;
-  final int heroTag;
-  final image;
 
-   DetailsScreen(this.pokemonDetail, this.color, this.heroTag, this.image);
+
+   DetailsScreen(this.pokemon, this.color);
 
   @override
   State<DetailsScreen> createState() => _DetailsScreenState();
@@ -37,7 +38,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
           Positioned(
             top: 90,
               left: 5,
-              child: Text(widget.pokemonDetail['name'], style: const TextStyle(
+              child: Text(widget.pokemon.name, style: const TextStyle(
                 color: Colors.white, fontWeight: FontWeight.bold, fontSize: 30
               ),),
           ),
@@ -52,7 +53,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                 ),
                 child: Padding(
                   padding: const EdgeInsets.only(left: 8.0, right: 8.0, top: 4.0, bottom: 4.0),
-                  child: Text(widget.pokemonDetail['type'], style: const TextStyle(
+                  child: Text(widget.pokemon.types.first, style: const TextStyle(
                     color: Colors.white
                   ),),
                 ),
@@ -92,7 +93,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                         ),
                             Container(
                               width: width * 0.3,
-                              child: Text(widget.pokemonDetail['name'],  style: const TextStyle(
+                              child: Text(widget.pokemon.name,  style: const TextStyle(
                                 color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold
                               ),),
                             ),
@@ -108,7 +109,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
             top: (height * 0.18),
               left: (width/2) - 100,
               child: CachedNetworkImage(
-            imageUrl: widget.image,
+            imageUrl: widget.pokemon.imageUrl,
                 height: 200,
                 fit: BoxFit.fitHeight,
           ))

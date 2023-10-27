@@ -12,8 +12,8 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   static const _pageSize = 20;
-  final PagingController<int, Map<String, dynamic>> _pagingController =
-  PagingController(firstPageKey: 0);
+  final PagingController<int, Pokemon> _pagingController = PagingController(firstPageKey: 0);
+
 
   @override
   void initState() {
@@ -45,15 +45,15 @@ class _HomeScreenState extends State<HomeScreen> {
             top: 150,
             bottom: 0,
             width: width,
-            child: PagedGridView<int, Map<String, dynamic>>(
+            child: PagedGridView<int, Pokemon>(
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
               childAspectRatio: 1.4,
             ),
             pagingController: _pagingController,
-            builderDelegate: PagedChildBuilderDelegate<Map<String, dynamic>>(
-              itemBuilder: (context, item, index) {
-                var type = item['type'];
+            builderDelegate: PagedChildBuilderDelegate<Pokemon>(
+              itemBuilder: (context, pokemon, index) {
+                var type = pokemon.types.first;
                 return  InkWell(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12),
@@ -82,7 +82,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               top: 20,
                               left: 10,
                               child: Text(
-                                  item['name'],
+                                  pokemon.name,
                                 style: const TextStyle(
                                   fontWeight: FontWeight.bold, fontSize: 18,
                                   color: Colors.white,
@@ -115,7 +115,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               bottom: 5,
                               right: 5,
                               child: CachedNetworkImage(
-                                imageUrl: extractImageUrlFromUrl(item['url']),
+                                imageUrl: pokemon.imageUrl,
                                 placeholder: (context, url) => CircularProgressIndicator(),
                                 errorWidget: (context, url, error) => Icon(Icons.error),
                                 height: 100,
@@ -128,15 +128,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   onTap: (){
                     Navigator.push(context, MaterialPageRoute(builder: (_) => DetailsScreen(
-                         item,
-                        type == "grass" ? Colors.greenAccent : type == "fire" ? Colors.redAccent
-                            :type == "water" ? Colors.blue : type == "poison" ? Colors.deepPurpleAccent
-                            : type == "electric" ? Colors.amber : type == "rock" ? Colors.grey
-                            : type == "ground" ? Colors.brown : type == "psychic" ? Colors.indigo
-                            : type == "fighting" ? Colors.orange : type == "bug" ? Colors.lightGreenAccent
-                            : type == "ghost" ? Colors.deepPurple : type == "normal" ? Colors.black26 : Colors.pink,
-                        index,
-                        extractImageUrlFromUrl(item['url']))));
+                         pokemon,
+                          type == "grass" ? Colors.greenAccent : type == "fire" ? Colors.redAccent
+                          :type == "water" ? Colors.blue : type == "poison" ? Colors.deepPurpleAccent
+                          : type == "electric" ? Colors.amber : type == "rock" ? Colors.grey
+                          : type == "ground" ? Colors.brown : type == "psychic" ? Colors.indigo
+                          : type == "fighting" ? Colors.orange : type == "bug" ? Colors.lightGreenAccent
+                          : type == "ghost" ? Colors.deepPurple : type == "normal" ? Colors.black26 : Colors.pink,
+
+                    )));
                   },
                 );
               }
@@ -148,32 +148,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Future<void> fetchPokemonData(int offset) async {
-  //   try {
-  //     var url = Uri.https("pokeapi.co", "/api/v2/pokemon", {
-  //       "offset": offset.toString(),
-  //       "limit": _pageSize.toString(),
-  //     });
-  //     final response = await http.get(url);
-  //
-  //     if (response.statusCode == 200) {
-  //       final data = jsonDecode(response.body);
-  //       final nextItems = (data['results'] as List).cast<Map<String, dynamic>>();
-  //
-  //       final isLastPage = nextItems.length < _pageSize;
-  //       if (isLastPage) {
-  //         _pagingController.appendLastPage(nextItems);
-  //       } else {
-  //         _pagingController.appendPage(nextItems, offset + _pageSize);
-  //       }
-  //     } else {
-  //       _pagingController.error = "Error fetching data";
-  //     }
-  //
-  //   } catch (error) {
-  //     _pagingController.error = error;
-  //   }
-  // }
 
   Future<void> fetchPokemonData(int offset) async {
     try {
@@ -185,29 +159,25 @@ class _HomeScreenState extends State<HomeScreen> {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final nextItems = (data['results'] as List).cast<Map<String, dynamic>>();
+        final nextPokemons = (data['results'] as List).cast<Map<String, dynamic>>()
+            .map((itemData) async {
+          final detailsResponse = await http.get(Uri.parse(itemData['url']));
+          final detailsData = jsonDecode(detailsResponse.body);
+          return Pokemon.fromJson(detailsData);
+        })
+            .toList();
 
-        // Obtener los tipos de los Pokémon
-        for (var item in nextItems) {
-          final detailsResponse = await http.get(Uri.parse(item['url']));
-          if (detailsResponse.statusCode == 200) {
-            final detailsData = jsonDecode(detailsResponse.body);
-            item['type'] = detailsData['types'][0]['type']['name'];
-          } else {
-            item['type'] = 'Unknown';
-          }
-        }
+        final pokemonList = await Future.wait(nextPokemons);
 
-        final isLastPage = nextItems.length < _pageSize;
+        final isLastPage = pokemonList.length < _pageSize;
         if (isLastPage) {
-          _pagingController.appendLastPage(nextItems);
+          _pagingController.appendLastPage(pokemonList);
         } else {
-          _pagingController.appendPage(nextItems, offset + _pageSize);
+          _pagingController.appendPage(pokemonList, offset + _pageSize);
         }
       } else {
         _pagingController.error = "Error fetching data";
       }
-
     } catch (error) {
       _pagingController.error = error;
     }
@@ -224,5 +194,32 @@ class _HomeScreenState extends State<HomeScreen> {
   void dispose() {
     _pagingController.dispose();
     super.dispose();
+  }
+}
+
+class Pokemon {
+  final int id;
+  final String name;
+  final String imageUrl;
+  final List<String> types;
+
+  const Pokemon({
+    required this.id,
+    required this.name,
+    required this.imageUrl,
+    required this.types,
+  });
+
+  factory Pokemon.fromJson(Map<String, dynamic> json) {
+    var typeList = (json['types'] as List)
+        .map((typeData) => typeData['type']['name'] as String)
+        .toList();
+
+    return Pokemon(
+      id: json['id'] as int,
+      name: json['name'] as String,
+      imageUrl: json['sprites']['front_default'] as String,
+      types: typeList,
+    );
   }
 }
