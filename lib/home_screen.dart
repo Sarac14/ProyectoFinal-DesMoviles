@@ -13,6 +13,8 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   static const _pageSize = 20;
   final PagingController<int, Pokemon> _pagingController = PagingController(firstPageKey: 0);
+  final TextEditingController searchController = TextEditingController();
+
 
 
   @override
@@ -36,11 +38,60 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Image.asset('images/pokeball.png', width: 200, fit: BoxFit.fitHeight,),
           ),
           const Positioned(
-            top: 80,
+            top: 70,
               left: 20,
               child: Text("Pokedex",
               style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: Colors.black),)
           ),
+
+          Positioned(
+            top: 120,
+            left: 20,
+            right: 20,
+            child: Row(
+              mainAxisSize: MainAxisSize.max,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.search, size: 26),
+                  onPressed: () async {
+                    _pagingController.refresh();
+                    await fetchPokemonData();
+                  },
+
+                ),
+
+                Expanded(
+                  child: TextFormField(
+                    controller: searchController,
+                    decoration: InputDecoration(
+                      isDense: true,
+                      hintText: 'Buscar Pokemon por numero o nombre',
+                      contentPadding: EdgeInsets.zero,
+                      hintStyle: const TextStyle(
+                        fontSize: 14,
+                        height: 1,
+                      ),
+                      border: InputBorder.none,
+                      suffixIcon:
+
+                      IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          searchController.clear();
+                          _pagingController.refresh();
+                        },
+                      )
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+
+
+
           Positioned(
             top: 150,
             bottom: 0,
@@ -90,7 +141,18 @@ class _HomeScreenState extends State<HomeScreen> {
 
                               ),
                             ),
+                        Positioned(
+                          top: 20,
+                          right: 10,
+                          child: Text(
+                            pokemon.id.toString(),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 18,
+                              color: Colors.white,
+                            ),
 
+                          ),
+                        ),
                           Positioned(
                             top: 45,
                             left: 20,
@@ -116,8 +178,8 @@ class _HomeScreenState extends State<HomeScreen> {
                               right: 5,
                               child: CachedNetworkImage(
                                 imageUrl: pokemon.imageUrl,
-                                placeholder: (context, url) => CircularProgressIndicator(),
-                                errorWidget: (context, url, error) => Icon(Icons.error),
+                                placeholder: (context, url) => const CircularProgressIndicator(),
+                                errorWidget: (context, url, error) => const Icon(Icons.error),
                                 height: 100,
                                 fit: BoxFit.fitHeight,
                               ),
@@ -148,27 +210,53 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  bool isNumeric(String s) {
+    return int.tryParse(s) != null;
+  }
 
-  Future<void> fetchPokemonData(int offset) async {
+
+  Future<void> fetchPokemonData([int offset = 0]) async {
     try {
-      var url = Uri.https("pokeapi.co", "/api/v2/pokemon", {
+      Uri url;
+
+      if (searchController.text.isNotEmpty) {
+        final isId = isNumeric(searchController.text);
+
+        if (isId) {
+          url = Uri.https('pokeapi.co', '/api/v2/pokemon/${int.parse(searchController.text)}');
+        } else {
+          url = Uri.https('pokeapi.co', '/api/v2/pokemon/${searchController.text.toLowerCase()}');
+        }
+
+        final response = await http.get(url);
+        if (response.statusCode == 200) {
+          final data = jsonDecode(response.body);
+          final pokemon = Pokemon.fromJson(data);
+          _pagingController.itemList = [pokemon];
+          _pagingController.appendLastPage([]);
+
+          return;
+        } else {
+          showErrorMessage("No se encontró el Pokémon");
+          return;
+        }
+      }
+
+      url = Uri.https('pokeapi.co', '/api/v2/pokemon', {
         "offset": offset.toString(),
         "limit": _pageSize.toString(),
       });
-      final response = await http.get(url);
 
+      final response = await http.get(url);
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final nextPokemons = (data['results'] as List).cast<Map<String, dynamic>>()
-            .map((itemData) async {
+        final nextPokemons = (data['results'] as List).map((itemData) async {
           final detailsResponse = await http.get(Uri.parse(itemData['url']));
           final detailsData = jsonDecode(detailsResponse.body);
           return Pokemon.fromJson(detailsData);
-        })
-            .toList();
+        }).toList();
 
         final pokemonList = await Future.wait(nextPokemons);
-
         final isLastPage = pokemonList.length < _pageSize;
         if (isLastPage) {
           _pagingController.appendLastPage(pokemonList);
@@ -178,10 +266,20 @@ class _HomeScreenState extends State<HomeScreen> {
       } else {
         _pagingController.error = "Error fetching data";
       }
+
     } catch (error) {
       _pagingController.error = error;
+      showErrorMessage(error.toString());
     }
   }
+
+  void showErrorMessage(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(message),
+      duration: const Duration(seconds: 2),
+    ));
+  }
+
 
 
   String extractImageUrlFromUrl(String url) {
