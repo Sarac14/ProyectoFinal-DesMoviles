@@ -27,7 +27,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
         alignment: Alignment.center,
         children: [
           Positioned(
-            top: 40,
+            top: 70,
             left: 1,
             child: IconButton( icon: const Icon(Icons.arrow_back, color: Colors.white, size: 30,),
               onPressed: (){
@@ -35,30 +35,14 @@ class _DetailsScreenState extends State<DetailsScreen> {
               }
             ),
           ),
-          Positioned(
-            top: 90,
-              left: 5,
-              child: Text(widget.pokemon.name, style: const TextStyle(
-                color: Colors.white, fontWeight: FontWeight.bold, fontSize: 30
+          const Positioned(
+            top: 75,
+              left: 50,
+              child: Text("Pokedex", style: TextStyle(
+                color: Colors.white, fontWeight: FontWeight.bold, fontSize: 25
               ),),
           ),
 
-          Positioned(
-            top: 140,
-              left: 20,
-              child: Container(
-                decoration: const BoxDecoration(
-                  borderRadius: BorderRadius.all(Radius.circular(10),),
-                  color: Colors.black26
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 8.0, right: 8.0, top: 4.0, bottom: 4.0),
-                  child: Text(widget.pokemon.types.first, style: const TextStyle(
-                    color: Colors.white
-                  ),),
-                ),
-              ),
-          ),
 
           Positioned(
               top: height * 0.2,
@@ -82,23 +66,39 @@ class _DetailsScreenState extends State<DetailsScreen> {
                     const SizedBox(height: 50,),
                     Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                        Container(
-                            width: width * 0.3,
-                            child: const Text("Name", style: TextStyle(
-                              color: Colors.blueGrey, fontSize: 18,
-                            ),),
-                        ),
-                            Container(
-                              width: width * 0.3,
-                              child: Text(widget.pokemon.name,  style: const TextStyle(
-                                color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold
-                              ),),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            widget.pokemon.name,
+                            style: const TextStyle(
+                                color: Colors.black, fontSize: 25, fontWeight: FontWeight.bold
                             ),
-                      ]),
+                          ),
+                          const SizedBox(height: 20),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: widget.pokemon.types.map((type) {
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 8),
+                                child: Container(
+                                  decoration: const BoxDecoration(
+                                    borderRadius: BorderRadius.all(Radius.circular(15)),
+                                    color: Colors.black38,
+                                  ),
+                                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4.0),
+                                  child: Text(
+                                    type,
+                                    style: const TextStyle(color: Colors.white, fontSize: 18),
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ],
+                      ),
                     ),
+
                   ],
                 ),
               ),
@@ -116,6 +116,51 @@ class _DetailsScreenState extends State<DetailsScreen> {
 
         ],
       ),
+    );
+  }
+}
+//---------------------------------------------------------------------
+class PokemonDetails {
+  //final String name;
+  //final List<String> types;
+  final List<Stat> stats;
+  final List<String> abilities;
+  // Supondré que las evoluciones son una lista de nombres de Pokémon por simplicidad
+  final List<String> evolutions;
+  final List<String> moves;
+
+  PokemonDetails({
+    //required this.name,
+   // required this.types,
+    required this.stats,
+    required this.abilities,
+    required this.evolutions,
+    required this.moves,
+  });
+
+  factory PokemonDetails.fromJson(Map<String, dynamic> json) {
+    return PokemonDetails(
+    //  name: json['name'] as String,
+    //  types: (json['types'] as List).map((e) => e['type']['name'] as String).toList(),
+      stats: (json['stats'] as List).map((e) => Stat.fromJson(e)).toList(),
+      abilities: (json['abilities'] as List).map((e) => e['ability']['name'] as String).toList(),
+      // Para evoluciones, tendrías que adaptarlo dependiendo de cómo estés manejando las evoluciones
+      evolutions: [], // Esto es solo un marcador de posición
+      moves: (json['moves'] as List).map((e) => e['move']['name'] as String).toList(),
+    );
+  }
+}
+
+class Stat {
+  final String name;
+  final int value;
+
+  Stat({required this.name, required this.value});
+
+  factory Stat.fromJson(Map<String, dynamic> json) {
+    return Stat(
+      name: json['stat']['name'] as String,
+      value: json['base_stat'] as int,
     );
   }
 }
