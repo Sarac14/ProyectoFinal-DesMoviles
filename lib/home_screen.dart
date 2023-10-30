@@ -181,7 +181,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 imageUrl: pokemon.imageUrl,
                                 placeholder: (context, url) => const CircularProgressIndicator(),
                                 errorWidget: (context, url, error) => const Icon(Icons.error),
-                                height: 100,
+                                height: 90,
                                 fit: BoxFit.fitHeight,
                               ),
                             ),
@@ -281,14 +281,6 @@ class _HomeScreenState extends State<HomeScreen> {
     ));
   }
 
-
-
-  String extractImageUrlFromUrl(String url) {
-    final id = url.split('/').reversed.elementAt(1);
-    return 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/$id.png';
-  }
-
-
   @override
   void dispose() {
     _pagingController.dispose();
@@ -317,7 +309,7 @@ class Pokemon {
     return Pokemon(
       id: json['id'] as int,
       name: json['name'] as String,
-      imageUrl: json['sprites']['front_default'] as String,
+      imageUrl: json['sprites']['other']['official-artwork']['front_default'] as String,
       types: typeList,
     );
   }
