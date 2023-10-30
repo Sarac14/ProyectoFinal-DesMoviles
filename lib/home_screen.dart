@@ -80,6 +80,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         onPressed: () {
                           searchController.clear();
                           _pagingController.refresh();
+                          fetchPokemonData();
                         },
                       )
                     ),
