@@ -19,11 +19,14 @@ void main() async {
   final database = await openDatabase(
     path,
     onCreate: (db, version) {
-      return db.execute(
+      db.execute(
         'CREATE TABLE pokemon(id INTEGER PRIMARY KEY, name TEXT, url TEXT)',
       );
+      db.execute(
+        'CREATE TABLE favorite_pokemon(id INTEGER PRIMARY KEY, pokemon_id INTEGER, FOREIGN KEY(pokemon_id) REFERENCES pokemon(id))',
+      );
     },
-    version: 1,
+    version: 2,
   );
 
   Future<void> insertPokemon(Pokemon pokemon) async {
