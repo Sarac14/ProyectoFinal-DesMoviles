@@ -16,6 +16,8 @@ class DetailsScreen extends StatefulWidget {
 }
 
 class _DetailsScreenState extends State<DetailsScreen> {
+  int selectedSection = 0;
+
   @override
   Widget build(BuildContext context) {
     var width = MediaQuery.of(context).size.width;
@@ -55,56 +57,30 @@ class _DetailsScreenState extends State<DetailsScreen> {
               width: width,
               height: height * 0.6,
               decoration: const BoxDecoration(
-                borderRadius: BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
+                ),
                 color: Colors.white,
               ),
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 50,),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            widget.pokemon.name,
-                            style: const TextStyle(
-                                color: Colors.black, fontSize: 25, fontWeight: FontWeight.bold
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: widget.pokemon.types.map((type) {
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 8),
-                                child: Container(
-                                  decoration: const BoxDecoration(
-                                    borderRadius: BorderRadius.all(Radius.circular(15)),
-                                    color: Colors.black38,
-                                  ),
-                                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4.0),
-                                  child: Text(
-                                    type,
-                                    style: const TextStyle(color: Colors.white, fontSize: 18),
-                                  ),
-                                ),
-                              );
-                            }).toList(),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                  ],
-                ),
+              child: Column(
+                children: [
+                  const SizedBox(height: 50),
+                  Row(
+                    children: [
+                      buildSectionButton(0, "ABOUT"),
+                      buildSectionButton(1, "STATS"),
+                      buildSectionButton(2, "EVOLUTIONS"),
+                      buildSectionButton(3, "MOVES"),
+                    ],
+                  ),
+                  SizedBox(height: 20),
+                  buildSectionContent(selectedSection),
+                ],
               ),
             ),
           ),
-          
+
           Positioned(
             top: (height * 0.18),
               left: (width/2) - 100,
@@ -118,20 +94,117 @@ class _DetailsScreenState extends State<DetailsScreen> {
       ),
     );
   }
+
+  Widget buildSectionButton(int sectionIndex, String sectionName) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          setState(() {
+            selectedSection = sectionIndex;
+          });
+        },
+        child: Container(
+          child: Column(
+            children: [
+              Text(
+                sectionName,
+                style: const TextStyle(
+                  color: Colors.black,
+                  fontSize: 16,
+                ),
+              ),
+              Container(
+                width: 40,
+                height: 2,
+                color: selectedSection == sectionIndex ? widget.color : Colors.transparent,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+
+  Widget buildSectionContent(int sectionIndex) {
+    switch (sectionIndex) {
+      case 0: // ABOUT
+        return Container(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            children: [
+              Text(
+                widget.pokemon.name,
+                style: const TextStyle(
+                    color: Colors.black, fontSize: 25, fontWeight: FontWeight.bold
+                ),
+              ),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: widget.pokemon.types.map((type) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: const BorderRadius.all(Radius.circular(15)),
+                        color: widget.color.withOpacity(0.8),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4.0),
+                      child: Text(
+                        type,
+                        style: const TextStyle(color: Colors.white, fontSize: 18),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ],
+          ),
+        );
+      case 1: // STATS
+        return Container(
+          padding: const EdgeInsets.all(20.0),
+          child: const Column(
+            children: [
+              // Aqui van las estadisticas
+            ],
+          ),
+        );
+      case 2: // EVOLUTIONS
+        return Container(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            children: [
+              // Aqui van las evoluciones
+            ],
+          ),
+        );
+      case 3: // MOVES
+        return Container(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            children: [
+              // Aqui van los movimientos
+            ],
+          ),
+        );
+      default:
+        return Container();
+    }
+  }
 }
+
 //---------------------------------------------------------------------
 class PokemonDetails {
-  //final String name;
-  //final List<String> types;
+
   final List<Stat> stats;
   final List<String> abilities;
-  // Supondré que las evoluciones son una lista de nombres de Pokémon por simplicidad
   final List<String> evolutions;
   final List<String> moves;
 
   PokemonDetails({
-    //required this.name,
-   // required this.types,
+
     required this.stats,
     required this.abilities,
     required this.evolutions,
@@ -140,12 +213,10 @@ class PokemonDetails {
 
   factory PokemonDetails.fromJson(Map<String, dynamic> json) {
     return PokemonDetails(
-    //  name: json['name'] as String,
-    //  types: (json['types'] as List).map((e) => e['type']['name'] as String).toList(),
+
       stats: (json['stats'] as List).map((e) => Stat.fromJson(e)).toList(),
       abilities: (json['abilities'] as List).map((e) => e['ability']['name'] as String).toList(),
-      // Para evoluciones, tendrías que adaptarlo dependiendo de cómo estés manejando las evoluciones
-      evolutions: [], // Esto es solo un marcador de posición
+      evolutions: [],
       moves: (json['moves'] as List).map((e) => e['move']['name'] as String).toList(),
     );
   }
