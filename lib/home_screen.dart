@@ -45,7 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
 
           Positioned(
-            top: 120,
+            top: 115,
             left: 20,
             right: 20,
             child: Row(
@@ -70,7 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       contentPadding: EdgeInsets.zero,
                       hintStyle: const TextStyle(
                         fontSize: 14,
-                        height: 1,
+                        height: 2.5,
                       ),
                       border: InputBorder.none,
                       suffixIcon:
@@ -116,7 +116,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             :type == "water" ? Colors.blue : type == "poison" ? Colors.deepPurpleAccent
                             : type == "electric" ? Colors.amber : type == "rock" ? Colors.grey
                             : type == "ground" ? Colors.brown : type == "psychic" ? Colors.indigo
-                            : type == "fighting" ? Colors.orange : type == "bug" ? Colors.lightGreenAccent
+                            : type == "fighting" ? Colors.orange : type == "bug" ? Colors.lightGreen
                             : type == "ghost" ? Colors.deepPurple : type == "normal" ? Colors.black26 : Colors.pink,
                         borderRadius: const BorderRadius.all(Radius.circular(20)),
                       ),
@@ -196,8 +196,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           :type == "water" ? Colors.blue : type == "poison" ? Colors.deepPurpleAccent
                           : type == "electric" ? Colors.amber : type == "rock" ? Colors.grey
                           : type == "ground" ? Colors.brown : type == "psychic" ? Colors.indigo
-                          : type == "fighting" ? Colors.orange : type == "bug" ? Colors.lightGreenAccent
-                          : type == "ghost" ? Colors.deepPurple : type == "normal" ? Colors.black26 : Colors.pink,
+                          : type == "fighting" ? Colors.orange : type == "bug" ? Colors.lightGreen
+                          : type == "ghost" ? Colors.deepPurple : type == "normal" ? Colors.grey : Colors.pink,
 
                     )));
                   },
@@ -293,12 +293,17 @@ class Pokemon {
   final String name;
   final String imageUrl;
   final List<String> types;
+  final int height;
+  final int weight;
+
 
   const Pokemon({
     required this.id,
     required this.name,
     required this.imageUrl,
     required this.types,
+    required this.height,
+    required this.weight,
   });
 
   factory Pokemon.fromJson(Map<String, dynamic> json) {
@@ -311,6 +316,8 @@ class Pokemon {
       name: json['name'] as String,
       imageUrl: json['sprites']['other']['official-artwork']['front_default'] as String,
       types: typeList,
+      height: (json['height']) as int,
+      weight: (json['weight']) as int,
     );
   }
 }

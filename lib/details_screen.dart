@@ -70,8 +70,9 @@ class _DetailsScreenState extends State<DetailsScreen> {
                     children: [
                       buildSectionButton(0, "ABOUT"),
                       buildSectionButton(1, "STATS"),
-                      buildSectionButton(2, "EVOLUTIONS"),
+                      buildSectionButton(2, "EVS"),
                       buildSectionButton(3, "MOVES"),
+                      buildSectionButton(4, "SKILLS"),
                     ],
                   ),
                   SizedBox(height: 20),
@@ -110,7 +111,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                 sectionName,
                 style: const TextStyle(
                   color: Colors.black,
-                  fontSize: 16,
+                  fontSize: 14,
                 ),
               ),
               Container(
@@ -134,12 +135,20 @@ class _DetailsScreenState extends State<DetailsScreen> {
           child: Column(
             children: [
               Text(
+                '#${widget.pokemon.id}',
+                style: const TextStyle(
+                  color: Colors.black38, fontSize: 20,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
                 widget.pokemon.name,
                 style: const TextStyle(
                     color: Colors.black, fontSize: 25, fontWeight: FontWeight.bold
                 ),
               ),
               const SizedBox(height: 10),
+
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: widget.pokemon.types.map((type) {
@@ -159,6 +168,52 @@ class _DetailsScreenState extends State<DetailsScreen> {
                   );
                 }).toList(),
               ),
+              const SizedBox(height: 25),
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    '${(widget.pokemon.weight / 10)} KG',
+                    style: const TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 50), // Espacio entre el peso y la altura
+                  Text(
+                    '${widget.pokemon.height / 10} M',
+                    style: const TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                    ),
+                  ),
+                ],
+              ),
+             const SizedBox(height: 10),
+              const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Peso',
+                    style: TextStyle(
+                      color: Colors.black38,
+                      fontSize: 14,
+                    ),
+                  ),
+                  SizedBox(width: 75), // Espacio entre el peso y la altura
+                  Text(
+                    'Altura',
+                    style: TextStyle(
+                      color: Colors.black38,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+
             ],
           ),
         );
@@ -189,6 +244,15 @@ class _DetailsScreenState extends State<DetailsScreen> {
             ],
           ),
         );
+      case 4: // MOVES
+        return Container(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            children: [
+              // Aqui van las habilidades
+            ],
+          ),
+        );
       default:
         return Container();
     }
@@ -203,12 +267,14 @@ class PokemonDetails {
   final List<String> evolutions;
   final List<String> moves;
 
+
   PokemonDetails({
 
     required this.stats,
     required this.abilities,
     required this.evolutions,
     required this.moves,
+
   });
 
   factory PokemonDetails.fromJson(Map<String, dynamic> json) {
@@ -218,6 +284,7 @@ class PokemonDetails {
       abilities: (json['abilities'] as List).map((e) => e['ability']['name'] as String).toList(),
       evolutions: [],
       moves: (json['moves'] as List).map((e) => e['move']['name'] as String).toList(),
+
     );
   }
 }
