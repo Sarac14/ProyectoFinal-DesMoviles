@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:pokedex_proyecto_final/details_screen.dart';
+import 'package:pokedex_proyecto_final/main.dart';
+import 'package:pokedex_proyecto_final/poke_database.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -106,6 +108,7 @@ class _HomeScreenState extends State<HomeScreen> {
             builderDelegate: PagedChildBuilderDelegate<Pokemon>(
               itemBuilder: (context, pokemon, index) {
                 var type = pokemon.types.first;
+                var isFavorite = false;
                 return  InkWell(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12),
@@ -154,7 +157,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
                           ),
                         ),
-                          Positioned(
+                          
+                        Positioned(
                             top: 45,
                             left: 20,
                             child: Container(
@@ -172,7 +176,28 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ),
                             ),
+                          ),Positioned(
+                          //top: 5,
+                          left: 5,
+                          bottom: 10,
+                          child: IconButton(
+                            icon: isFavorite ? Icon(Icons.favorite, color: Colors.redAccent) : Icon(Icons.favorite_border),
+                            onPressed: () {
+                              setState(() async {
+                                isFavorite = !isFavorite;
+                                if (isFavorite) {
+                                  await PokeDatabase.instance.insertFavoritePokemon(pokemon.id);
+                                  PokeDatabase.instance.printAllFavoritePokemons();
+                                  //widget.mainInstance.addFavoritePokemon(widget.database, pokemon.id); // Agrega el Pokemon a la lista de favoritos
+                                } else {
+                                  await PokeDatabase.instance.insertFavoritePokemon(pokemon.id);
+                                  PokeDatabase.instance.printAllFavoritePokemons();
+                                  //widget.mainInstance.removeFavoritePokemon(widget.database, pokemon.id); // Elimina el Pokemon de la lista de favoritos
+                                }
+                              });
+                            },
                           ),
+                        ),
 
                             Positioned(
                               bottom: 5,
@@ -287,6 +312,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 }
+
 
 class Pokemon {
   final int id;
