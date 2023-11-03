@@ -414,6 +414,17 @@ class Pokemon {
     required this.weight,
   });
 
+  factory Pokemon.fromPokemonItem(PokemonItem pokemonItem) {
+    return Pokemon(
+      id: pokemonItem.id,
+      name: pokemonItem.name,
+      imageUrl: pokemonItem.imageUrl,
+      types: pokemonItem.types,
+      height: pokemonItem.height,
+      weight: pokemonItem.weight,
+    );
+  }
+
   factory Pokemon.fromJson(Map<String, dynamic> json) {
     var typeList = (json['types'] as List)
         .map((typeData) => typeData['type']['name'] as String)

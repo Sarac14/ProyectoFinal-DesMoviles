@@ -33,7 +33,7 @@ class PokeDatabase {
     );
   }
 
-  Future<int> insertPokemon(Pokemon pokemon) async {
+  Future<int> insertPokemon(PokemonDB pokemon) async {
     final db = await database;
     return await db.insert(
       'pokemon',
@@ -52,7 +52,7 @@ class PokeDatabase {
 
       // Insertar los datos en la base de datos
       for (var result in results) {
-        Pokemon pokemon = Pokemon(
+        PokemonDB pokemon = PokemonDB(
           id: results.indexOf(result) + 1,
           name: result['name'],
           url: result['url'],
@@ -179,7 +179,7 @@ class PokeDatabase {
     }
   }
 
-  Future<List<Pokemon>> getFavoritePokemons() async {
+  Future<List<PokemonDB>> getFavoritePokemons() async {
     final db = await database;
 
     final List<Map<String, dynamic>> maps = await db.query(
@@ -187,14 +187,14 @@ class PokeDatabase {
       columns: ['pokemon_id'],
     );
 
-    List<Pokemon> favoritePokemons = [];
+    List<PokemonDB> favoritePokemons = [];
 
     for (var map in maps) {
       final pokemonId = map['pokemon_id'];
       final pokemonMap =
       await db.query('pokemon', where: 'id = ?', whereArgs: [pokemonId]);
       if (pokemonMap.isNotEmpty) {
-        final pokemon = Pokemon(
+        final pokemon = PokemonDB(
           id: pokemonMap[0]['id'] as int,
           name: pokemonMap[0]['name'] as String,
           url: pokemonMap[0]['url'] as String,
@@ -228,12 +228,12 @@ class PokeDatabase {
   }
 
 }
-class Pokemon {
+class PokemonDB {
   final int id;
   final String name;
   final String url;
 
-  Pokemon({required this.id, required this.name, required this.url});
+  PokemonDB({required this.id, required this.name, required this.url});
 
   Map<String, dynamic> toMap() {
     return {
