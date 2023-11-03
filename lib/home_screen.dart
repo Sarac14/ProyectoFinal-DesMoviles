@@ -3,9 +3,14 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
+import 'package:path/path.dart';
+import 'package:path/path.dart';
+import 'package:path/path.dart';
 import 'package:pokedex_proyecto_final/details_screen.dart';
 import 'package:pokedex_proyecto_final/main.dart';
 import 'package:pokedex_proyecto_final/poke_database.dart';
+
+import 'favorite_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -13,11 +18,18 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  bool isFavorite = false;
   static const _pageSize = 20;
-  final PagingController<int, Pokemon> _pagingController = PagingController(firstPageKey: 0);
+  final PagingController<int, Pokemon> _pagingController =
+      PagingController(firstPageKey: 0);
   final TextEditingController searchController = TextEditingController();
 
-
+  void _openFavoritePokemonScreen(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => FavoritePokemonScreen()),
+    );
+  }
 
   @override
   void initState() {
@@ -30,22 +42,39 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     var width = MediaQuery.of(context).size.width;
-    var height =  MediaQuery.of(context).size.height;
+    var height = MediaQuery.of(context).size.height;
     return Scaffold(
       body: Stack(
         children: [
           Positioned(
             top: -50,
-              right: -50,
-              child: Image.asset('images/pokeball.png', width: 200, fit: BoxFit.fitHeight,),
+            right: -50,
+            child: Image.asset(
+              'images/pokeball.png',
+              width: 200,
+              fit: BoxFit.fitHeight,
+            ),
           ),
           const Positioned(
-            top: 70,
+              top: 70,
               left: 20,
-              child: Text("Pokedex",
-              style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: Colors.black),)
+              child: Text(
+                "Pokedex",
+                style: TextStyle(
+                    fontSize: 30,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black),
+              )),
+          Positioned(
+            top: 70,
+            right: 20,
+            child: IconButton(
+              icon: const Icon(Icons.favorite, color: Colors.redAccent),
+              onPressed: () {
+                _openFavoritePokemonScreen(context);
+              },
+            ),
           ),
-
           Positioned(
             top: 115,
             left: 20,
@@ -60,176 +89,229 @@ class _HomeScreenState extends State<HomeScreen> {
                     _pagingController.refresh();
                     await fetchPokemonData();
                   },
-
                 ),
-
                 Expanded(
                   child: TextFormField(
                     controller: searchController,
                     decoration: InputDecoration(
-                      isDense: true,
-                      hintText: 'Buscar Pokemon por numero o nombre',
-                      contentPadding: EdgeInsets.zero,
-                      hintStyle: const TextStyle(
-                        fontSize: 14,
-                        height: 2.5,
-                      ),
-                      border: InputBorder.none,
-                      suffixIcon:
-
-                      IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          searchController.clear();
-                          _pagingController.refresh();
-                          fetchPokemonData();
-                        },
-                      )
-                    ),
+                        isDense: true,
+                        hintText: 'Buscar Pokemon por numero o nombre',
+                        contentPadding: EdgeInsets.zero,
+                        hintStyle: const TextStyle(
+                          fontSize: 14,
+                          height: 2.5,
+                        ),
+                        border: InputBorder.none,
+                        suffixIcon: IconButton(
+                          icon: const Icon(Icons.clear),
+                          onPressed: () {
+                            searchController.clear();
+                            _pagingController.refresh();
+                            fetchPokemonData();
+                          },
+                        )),
                   ),
                 ),
               ],
             ),
           ),
-
-
-
-
           Positioned(
             top: 150,
             bottom: 0,
             width: width,
             child: PagedGridView<int, Pokemon>(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              childAspectRatio: 1.4,
-            ),
-            pagingController: _pagingController,
-            builderDelegate: PagedChildBuilderDelegate<Pokemon>(
-              itemBuilder: (context, pokemon, index) {
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 1.4,
+              ),
+              pagingController: _pagingController,
+              builderDelegate: PagedChildBuilderDelegate<Pokemon>(
+                  itemBuilder: (context, pokemon, index) {
                 var type = pokemon.types.first;
-                var isFavorite = false;
-                return  InkWell(
+                return InkWell(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 8.0, horizontal: 12),
                     child: Container(
                       decoration: BoxDecoration(
-                       // color: Colors.green,
-                        color: type == "grass" ? Colors.greenAccent : type == "fire" ? Colors.redAccent
-                            :type == "water" ? Colors.blue : type == "poison" ? Colors.deepPurpleAccent
-                            : type == "electric" ? Colors.amber : type == "rock" ? Colors.grey
-                            : type == "ground" ? Colors.brown : type == "psychic" ? Colors.indigo
-                            : type == "fighting" ? Colors.orange : type == "bug" ? Colors.lightGreen
-                            : type == "ghost" ? Colors.deepPurple : type == "normal" ? Colors.black26 : Colors.pink,
-                        borderRadius: const BorderRadius.all(Radius.circular(20)),
+                        // color: Colors.green,
+                        color: type == "grass"
+                            ? Colors.greenAccent
+                            : type == "fire"
+                                ? Colors.redAccent
+                                : type == "water"
+                                    ? Colors.blue
+                                    : type == "poison"
+                                        ? Colors.deepPurpleAccent
+                                        : type == "electric"
+                                            ? Colors.amber
+                                            : type == "rock"
+                                                ? Colors.grey
+                                                : type == "ground"
+                                                    ? Colors.brown
+                                                    : type == "psychic"
+                                                        ? Colors.indigo
+                                                        : type == "fighting"
+                                                            ? Colors.orange
+                                                            : type == "bug"
+                                                                ? Colors
+                                                                    .lightGreen
+                                                                : type ==
+                                                                        "ghost"
+                                                                    ? Colors
+                                                                        .deepPurple
+                                                                    : type ==
+                                                                            "normal"
+                                                                        ? Colors
+                                                                            .black26
+                                                                        : Colors
+                                                                            .pink,
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(20)),
                       ),
-                  //  color: Colors.green,
-               // child: Stack(
-                    child: Stack(
-                      children: [
-                        Positioned(
-                          bottom: -10,
-                          right: -10,
-                          child: Image.asset('images/pokeball.png',
-                          height: 100,
-                          fit: BoxFit.fitHeight,)),
-                            Positioned(
-                              top: 20,
-                              left: 10,
-                              child: Text(
-                                  pokemon.name,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 18,
-                                  color: Colors.white,
-                                ),
-
+                      //  color: Colors.green,
+                      // child: Stack(
+                      child: Stack(
+                        children: [
+                          Positioned(
+                              bottom: -10,
+                              right: -10,
+                              child: Image.asset(
+                                'images/pokeball.png',
+                                height: 100,
+                                fit: BoxFit.fitHeight,
+                              )),
+                          Positioned(
+                            top: 20,
+                            left: 10,
+                            child: Text(
+                              pokemon.name,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                                color: Colors.white,
                               ),
                             ),
-                        Positioned(
-                          top: 20,
-                          right: 10,
-                          child: Text(
-                            pokemon.id.toString(),
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 18,
-                              color: Colors.white,
-                            ),
-
                           ),
-                        ),
-                          
-                        Positioned(
+                          Positioned(
+                            top: 20,
+                            right: 10,
+                            child: Text(
+                              pokemon.id.toString(),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                          Positioned(
                             top: 45,
                             left: 20,
                             child: Container(
                               decoration: const BoxDecoration(
-                                borderRadius: BorderRadius.all(Radius.circular(20)),
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(20)),
                                 color: Colors.black26,
                               ),
                               child: Padding(
-                                padding: const EdgeInsets.only(left: 8.0, right: 8.0, top: 4, bottom: 4),
+                                padding: const EdgeInsets.only(
+                                    left: 8.0, right: 8.0, top: 4, bottom: 4),
                                 child: Text(
-                                    type.toString(),
+                                  type.toString(),
                                   style: const TextStyle(
                                     color: Colors.white,
                                   ),
                                 ),
                               ),
                             ),
-                          ),Positioned(
-                          //top: 5,
-                          left: 5,
-                          bottom: 10,
-                          child: IconButton(
-                            icon: isFavorite ? Icon(Icons.favorite, color: Colors.redAccent) : Icon(Icons.favorite_border),
-                            onPressed: () {
-                              setState(() async {
-                                isFavorite = !isFavorite;
-                                if (isFavorite) {
-                                  await PokeDatabase.instance.insertFavoritePokemon(pokemon.id);
-                                  PokeDatabase.instance.printAllFavoritePokemons();
-                                  //widget.mainInstance.addFavoritePokemon(widget.database, pokemon.id); // Agrega el Pokemon a la lista de favoritos
-                                } else {
-                                  await PokeDatabase.instance.insertFavoritePokemon(pokemon.id);
-                                  PokeDatabase.instance.printAllFavoritePokemons();
-                                  //widget.mainInstance.removeFavoritePokemon(widget.database, pokemon.id); // Elimina el Pokemon de la lista de favoritos
-                                }
-                              });
-                            },
                           ),
-                        ),
-
-                            Positioned(
-                              bottom: 5,
-                              right: 5,
-                              child: CachedNetworkImage(
-                                imageUrl: pokemon.imageUrl,
-                                placeholder: (context, url) => const CircularProgressIndicator(),
-                                errorWidget: (context, url, error) => const Icon(Icons.error),
-                                height: 90,
-                                fit: BoxFit.fitHeight,
-                              ),
+                          Positioned(
+                            //top: 5,
+                            left: 5,
+                            bottom: 10,
+                            child: IconButton(
+                              icon: isFavorite
+                                  ? const Icon(Icons.favorite,
+                                      color: Colors.redAccent)
+                                  : const Icon(Icons.favorite_border),
+                              onPressed: () {
+                                setState(() {
+                                  //isFavorite = obtenerEstadoFavorito(pokemon.id) as bool;
+                                  if (isFavorite) {
+                                    agregarFavoritePokemon(pokemon.id);
+                                    PokeDatabase.instance
+                                        .printAllFavoritePokemons();
+                                    //widget.mainInstance.addFavoritePokemon(widget.database, pokemon.id); // Agrega el Pokemon a la lista de favoritos
+                                  } else {
+                                    agregarFavoritePokemon(pokemon.id);
+                                    PokeDatabase.instance
+                                        .printAllFavoritePokemons();
+                                    //widget.mainInstance.removeFavoritePokemon(widget.database, pokemon.id); // Elimina el Pokemon de la lista de favoritos
+                                  }
+                                });
+                              },
                             ),
-                      ],
-                    ),
+                          ),
+                          Positioned(
+                            bottom: 5,
+                            right: 5,
+                            child: CachedNetworkImage(
+                              imageUrl: pokemon.imageUrl,
+                              placeholder: (context, url) =>
+                                  const CircularProgressIndicator(),
+                              errorWidget: (context, url, error) =>
+                                  const Icon(Icons.error),
+                              height: 90,
+                              fit: BoxFit.fitHeight,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                  onTap: (){
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => DetailsScreen(
-                         pokemon,
-                          type == "grass" ? Colors.greenAccent : type == "fire" ? Colors.redAccent
-                          :type == "water" ? Colors.blue : type == "poison" ? Colors.deepPurpleAccent
-                          : type == "electric" ? Colors.amber : type == "rock" ? Colors.grey
-                          : type == "ground" ? Colors.brown : type == "psychic" ? Colors.indigo
-                          : type == "fighting" ? Colors.orange : type == "bug" ? Colors.lightGreen
-                          : type == "ghost" ? Colors.deepPurple : type == "normal" ? Colors.grey : Colors.pink,
-
-                    )));
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => DetailsScreen(
+                                  pokemon,
+                                  type == "grass"
+                                      ? Colors.greenAccent
+                                      : type == "fire"
+                                          ? Colors.redAccent
+                                          : type == "water"
+                                              ? Colors.blue
+                                              : type == "poison"
+                                                  ? Colors.deepPurpleAccent
+                                                  : type == "electric"
+                                                      ? Colors.amber
+                                                      : type == "rock"
+                                                          ? Colors.grey
+                                                          : type == "ground"
+                                                              ? Colors.brown
+                                                              : type ==
+                                                                      "psychic"
+                                                                  ? Colors
+                                                                      .indigo
+                                                                  : type ==
+                                                                          "fighting"
+                                                                      ? Colors
+                                                                          .orange
+                                                                      : type ==
+                                                                              "bug"
+                                                                          ? Colors
+                                                                              .lightGreen
+                                                                          : type == "ghost"
+                                                                              ? Colors.deepPurple
+                                                                              : type == "normal"
+                                                                                  ? Colors.grey
+                                                                                  : Colors.pink,
+                                )));
                   },
                 );
-              }
+              }),
             ),
-        ),
           ),
         ],
       ),
@@ -240,7 +322,6 @@ class _HomeScreenState extends State<HomeScreen> {
     return int.tryParse(s) != null;
   }
 
-
   Future<void> fetchPokemonData([int offset = 0]) async {
     try {
       Uri url;
@@ -249,9 +330,11 @@ class _HomeScreenState extends State<HomeScreen> {
         final isId = isNumeric(searchController.text);
 
         if (isId) {
-          url = Uri.https('pokeapi.co', '/api/v2/pokemon/${int.parse(searchController.text)}');
+          url = Uri.https('pokeapi.co',
+              '/api/v2/pokemon/${int.parse(searchController.text)}');
         } else {
-          url = Uri.https('pokeapi.co', '/api/v2/pokemon/${searchController.text.toLowerCase()}');
+          url = Uri.https('pokeapi.co',
+              '/api/v2/pokemon/${searchController.text.toLowerCase()}');
         }
 
         final response = await http.get(url);
@@ -292,7 +375,6 @@ class _HomeScreenState extends State<HomeScreen> {
       } else {
         _pagingController.error = "Error fetching data";
       }
-
     } catch (error) {
       _pagingController.error = error;
       showErrorMessage(error.toString());
@@ -300,7 +382,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void showErrorMessage(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+    ScaffoldMessenger.of(context as BuildContext).showSnackBar(SnackBar(
       content: Text(message),
       duration: const Duration(seconds: 2),
     ));
@@ -313,7 +395,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-
 class Pokemon {
   final int id;
   final String name;
@@ -321,7 +402,6 @@ class Pokemon {
   final List<String> types;
   final int height;
   final int weight;
-
 
   const Pokemon({
     required this.id,
@@ -340,10 +420,20 @@ class Pokemon {
     return Pokemon(
       id: json['id'] as int,
       name: json['name'] as String,
-      imageUrl: json['sprites']['other']['official-artwork']['front_default'] as String,
+      imageUrl: json['sprites']['other']['official-artwork']['front_default']
+          as String,
       types: typeList,
       height: (json['height']) as int,
       weight: (json['weight']) as int,
     );
   }
+}
+
+Future<bool> agregarFavoritePokemon(int pokemonId) async {
+  return await PokeDatabase.instance.toggleFavoritePokemon(pokemonId);
+}
+
+Future<bool> obtenerEstadoFavorito(int pokemonId) async {
+  bool Favorito = await PokeDatabase.instance.isFavoritePokemon(pokemonId);
+  return Favorito;
 }

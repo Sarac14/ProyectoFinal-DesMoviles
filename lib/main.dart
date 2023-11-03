@@ -9,7 +9,6 @@ void main() async {
   await PokeDatabase.instance.insertPokemonsFromApi();
 
   await PokeDatabase.instance.printAllPokemons();
-
   runApp(MyApp());
 }
 
@@ -23,5 +22,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
-

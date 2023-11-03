@@ -64,7 +64,59 @@ class PokeDatabase {
     }
   }
 
-  Future<void> insertFavoritePokemon(int pokemonId) async {
+  Future<bool> toggleFavoritePokemon(int pokemonId) async {
+    final db = await database;
+    try {
+      return await db.transaction((txn) async {
+        // Check if the item already exists in the database
+        final result = await txn.rawQuery(
+          'SELECT * FROM favorite_pokemon WHERE pokemon_id = ?',
+          [pokemonId],
+        );
+
+        // If the item exists, delete it from the database
+        if (result.isNotEmpty) {
+          await txn.rawDelete(
+            'DELETE FROM favorite_pokemon WHERE pokemon_id = ?',
+            [pokemonId],
+          );
+          return false;
+        }
+        // If the item does not exist, add it to the database
+        else {
+          await txn.rawInsert(
+            'INSERT INTO favorite_pokemon(pokemon_id) VALUES(?)',
+            [pokemonId],
+          );
+          return true;
+        }
+      });
+    } catch (e) {
+      print('Error occurred: $e');
+      return false;
+    }
+  }
+
+  Future<bool> isFavoritePokemon(int pokemonId) async {
+    final db = await database;
+    try {
+      final result = await db.rawQuery(
+        'SELECT * FROM favorite_pokemon WHERE pokemon_id = ?',
+        [pokemonId],
+      );
+
+      if (result.isNotEmpty) {
+        return true;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      print('Error occurred: $e');
+      return false;
+    }
+  }
+
+  /*Future<void> insertFavoritePokemon(int pokemonId) async {
     final db = await database;
     try {
       await db.transaction((txn) async {
@@ -76,7 +128,7 @@ class PokeDatabase {
     } catch (e) {
       print('Error occurred: $e');
     }
-  }
+  }*/
 
   Future<int> deleteFavoritePokemon(int id) async {
     final db = await database;
@@ -106,27 +158,76 @@ class PokeDatabase {
       print('No pokemons found in the database.');
     } else {
       pokemons.forEach((pokemon) {
-        print('Pokemon - id: ${pokemon['id']}, name: ${pokemon['name']}, url: ${pokemon['url']}');
+        print(
+            'Pokemon - id: ${pokemon['id']}, name: ${pokemon['name']}, url: ${pokemon['url']}');
       });
     }
   }
 
   Future<void> printAllFavoritePokemons() async {
     final db = await database;
-    final List<Map<String, dynamic>> favoritePokemons = await db.query('favorite_pokemon');
+    final List<Map<String, dynamic>> favoritePokemons =
+    await db.query('favorite_pokemon');
 
     if (favoritePokemons.isEmpty) {
       print('No favorite pokemons found in the database.');
     } else {
       favoritePokemons.forEach((favoritePokemon) {
-        print('Favorite Pokemon - id: ${favoritePokemon['id']}, pokemon_id: ${favoritePokemon['pokemon_id']}');
+        print(
+            'Favorite Pokemon - id: ${favoritePokemon['id']}, pokemon_id: ${favoritePokemon['pokemon_id']}');
       });
     }
   }
+
+  Future<List<Pokemon>> getFavoritePokemons() async {
+    final db = await database;
+
+    final List<Map<String, dynamic>> maps = await db.query(
+      'favorite_pokemon',
+      columns: ['pokemon_id'],
+    );
+
+    List<Pokemon> favoritePokemons = [];
+
+    for (var map in maps) {
+      final pokemonId = map['pokemon_id'];
+      final pokemonMap =
+      await db.query('pokemon', where: 'id = ?', whereArgs: [pokemonId]);
+      if (pokemonMap.isNotEmpty) {
+        final pokemon = Pokemon(
+          id: pokemonMap[0]['id'] as int,
+          name: pokemonMap[0]['name'] as String,
+          url: pokemonMap[0]['url'] as String,
+        );
+        favoritePokemons.add(pokemon);
+      }
+    }
+    return favoritePokemons;
+  }
+
+  Future<List<String>> getFavoritePokemonUrls() async {
+    final db = await database;
+
+    final List<Map<String, dynamic>> maps = await db.query(
+      'favorite_pokemon',
+      columns: ['pokemon_id'],
+    );
+
+    List<String> favoritePokemonUrls = [];
+
+    for (var map in maps) {
+      final pokemonId = map['pokemon_id'];
+      final pokemonMap = await db.query(
+          'pokemon', where: 'id = ?', whereArgs: [pokemonId]);
+      if (pokemonMap.isNotEmpty) {
+        final url = pokemonMap[0]['url'] as String;
+        favoritePokemonUrls.add(url);
+      }
+    }
+    return favoritePokemonUrls;
+  }
+
 }
-
-
-
 class Pokemon {
   final int id;
   final String name;
