@@ -18,6 +18,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  Set<int> favoritePokemons = Set<int>();
   bool isFavorite = false;
   static const _pageSize = 20;
   final PagingController<int, Pokemon> _pagingController =
@@ -34,6 +35,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    loadFavoritePokemons();
     _pagingController.addPageRequestListener((pageKey) {
       fetchPokemonData(pageKey);
     });
@@ -227,27 +229,20 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ),
                           Positioned(
-                            //top: 5,
                             left: 5,
                             bottom: 10,
                             child: IconButton(
-                              icon: isFavorite
-                                  ? const Icon(Icons.favorite,
-                                      color: Colors.redAccent)
-                                  : const Icon(Icons.favorite_border),
+                              icon: favoritePokemons.contains(pokemon.id)
+                                  ? Icon(Icons.favorite, color: Colors.red)
+                                  : Icon(Icons.favorite_border),
                               onPressed: () {
                                 setState(() {
-                                  //isFavorite = obtenerEstadoFavorito(pokemon.id) as bool;
-                                  if (isFavorite) {
-                                    agregarFavoritePokemon(pokemon.id);
-                                    PokeDatabase.instance
-                                        .printAllFavoritePokemons();
-                                    //widget.mainInstance.addFavoritePokemon(widget.database, pokemon.id); // Agrega el Pokemon a la lista de favoritos
+                                  if (favoritePokemons.contains(pokemon.id)) {
+                                    agregarFavoritePokemon(pokemon.id); // Función para quitar de favoritos
+                                    favoritePokemons.remove(pokemon.id);
                                   } else {
-                                    agregarFavoritePokemon(pokemon.id);
-                                    PokeDatabase.instance
-                                        .printAllFavoritePokemons();
-                                    //widget.mainInstance.removeFavoritePokemon(widget.database, pokemon.id); // Elimina el Pokemon de la lista de favoritos
+                                    agregarFavoritePokemon(pokemon.id); // Función para agregar a favoritos
+                                    favoritePokemons.add(pokemon.id);
                                   }
                                 });
                               },
@@ -392,6 +387,13 @@ class _HomeScreenState extends State<HomeScreen> {
   void dispose() {
     _pagingController.dispose();
     super.dispose();
+  }
+
+  Future<void> loadFavoritePokemons() async {
+    final favoriteList = await PokeDatabase.instance.getFavoritePokemons();
+    setState(() {
+      favoritePokemons = Set<int>.from(favoriteList.map((pokemon) => pokemon.id));
+    });
   }
 }
 
