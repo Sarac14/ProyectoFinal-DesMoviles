@@ -139,7 +139,7 @@ class _FavoritePokemonScreenState extends State<FavoritePokemonScreen> {
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           }else {
-            return Center(child: Text('No hay favoritos. Ruede Pajaro del Diablo. Sara escribio esto'));
+            return Center(child: Text('La lista de favoritos se encuentra vacia'));
           }
           return Center(child: CircularProgressIndicator());
         },
