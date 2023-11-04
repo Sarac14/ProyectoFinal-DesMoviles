@@ -19,13 +19,6 @@ class DetailsScreen extends StatefulWidget {
 
 class _DetailsScreenState extends State<DetailsScreen> {
   int selectedSection = 0;
-  late Future<String> _pokemonUrl;
-
-  void fetchPokemonUrl() async {
-    setState(() {
-      _pokemonUrl = buscarUrlbyId(widget.pokemon.id);
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -202,7 +195,6 @@ class _DetailsScreenState extends State<DetailsScreen> {
                     ),
                   ),
                   const SizedBox(width: 50),
-                  // Espacio entre el peso y la altura
                   Text(
                     '${widget.pokemon.height / 10} M',
                     style: const TextStyle(
@@ -224,7 +216,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                       fontSize: 14,
                     ),
                   ),
-                  SizedBox(width: 75), // Espacio entre el peso y la altura
+                  SizedBox(width: 75),
                   Text(
                     'Altura',
                     style: TextStyle(
@@ -383,9 +375,9 @@ Future<List<Map<String, dynamic>>> fetchData(String pokemon) async {
   List<Map<String, dynamic>> abilitiesList = [];
 
   for (var ability in data['abilities']) {
-    var abilitiesUrl = ability['ability']['url']; // Obtención de la URL de la habilidad
-    var abilitiesResponse = await http.get(Uri.parse(abilitiesUrl)); // Realización de la solicitud HTTP para obtener la información detallada de la habilidad
-    var abilitiesData = json.decode(abilitiesResponse.body); // Decodificación de la respuesta para obtener los datos de la habilidad
+    var abilitiesUrl = ability['ability']['url'];
+    var abilitiesResponse = await http.get(Uri.parse(abilitiesUrl));
+    var abilitiesData = json.decode(abilitiesResponse.body);
 
     // Verificación de la descripción en inglés
     var englishDescription = abilitiesData['effect_entries']
@@ -394,7 +386,7 @@ Future<List<Map<String, dynamic>>> fetchData(String pokemon) async {
     var abilitiesName = abilitiesData['name'];
     var abilitiesDescription = englishDescription != null
         ? englishDescription['effect']
-        : "Descripción no disponible en inglés"; // Mensaje de respaldo si no se encuentra la descripción en inglés
+        : "Descripción no disponible en inglés";
 
     abilitiesList.add({'name': abilitiesName, 'description': abilitiesDescription});
   }
@@ -402,7 +394,3 @@ Future<List<Map<String, dynamic>>> fetchData(String pokemon) async {
   return abilitiesList;
 }
 
-
-Future<String> buscarUrlbyId(int pokemonId) async {
-  return await PokeDatabase.instance.getPokemonUrlById(pokemonId);
-}
