@@ -227,7 +227,20 @@ class PokeDatabase {
     return favoritePokemonUrls;
   }
 
+  Future<String> getPokemonUrlById(int id) async {
+    final Database db = await database;
+
+    final List<Map<String, dynamic>> maps = await db.query(
+      'pokemon',
+      columns: ['url'],
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+
+    return maps.first['url'];
+  }
 }
+
 class PokemonDB {
   final int id;
   final String name;
