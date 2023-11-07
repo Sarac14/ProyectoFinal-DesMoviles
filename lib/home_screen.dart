@@ -43,6 +43,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
     return Scaffold(
@@ -251,14 +252,15 @@ class _HomeScreenState extends State<HomeScreen> {
                           Positioned(
                             bottom: 5,
                             right: 5,
-                            child: CachedNetworkImage(
-                              imageUrl: pokemon.imageUrl,
-                              placeholder: (context, url) =>
-                                  const CircularProgressIndicator(),
-                              errorWidget: (context, url, error) =>
-                                  const Icon(Icons.error),
-                              height: 90,
-                              fit: BoxFit.fitHeight,
+                            child: Hero(
+                              tag: 'pokemon-${pokemon.id}',
+                              child: CachedNetworkImage(
+                                imageUrl: pokemon.imageUrl,
+                                placeholder: (context, url) => const CircularProgressIndicator(),
+                                errorWidget: (context, url, error) => const Icon(Icons.error),
+                                height: 90,
+                                fit: BoxFit.fitHeight,
+                              ),
                             ),
                           ),
                         ],

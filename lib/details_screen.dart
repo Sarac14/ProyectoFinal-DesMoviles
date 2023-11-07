@@ -95,11 +95,18 @@ class _DetailsScreenState extends State<DetailsScreen> {
           Positioned(
               top: (height * 0.18),
               left: (width / 2) - 100,
-              child: CachedNetworkImage(
-                imageUrl: widget.pokemon.imageUrl,
-                height: 200,
-                fit: BoxFit.fitHeight,
-              ))
+              child:
+              Hero(
+                tag: 'pokemon-${widget.pokemon.id}',
+                child: CachedNetworkImage(
+                  imageUrl: widget.pokemon.imageUrl,
+                  placeholder: (context, url) => const CircularProgressIndicator(),
+                  errorWidget: (context, url, error) => const Icon(Icons.error),
+                  height: 200,
+                  fit: BoxFit.fitHeight,
+                ),
+              ),
+          )
         ],
       ),
     );
