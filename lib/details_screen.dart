@@ -265,7 +265,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
         );
       case 4: // MOVES
         return Container(
-          height: 400,
+          height: 300,
           padding: const EdgeInsets.fromLTRB(20.0, 0.0, 20.0, 20.0),
           child: FutureBuilder<List<Map<String, dynamic>>>(
             future: fetchData(widget.pokemon.name),
