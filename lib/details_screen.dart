@@ -4,6 +4,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:pokedex_proyecto_final/poke_database.dart';
+import 'package:pokedex_proyecto_final/pokemon.dart';
+
 
 import 'home_screen.dart';
 
@@ -332,47 +334,6 @@ class _DetailsScreenState extends State<DetailsScreen> {
   }
 }
 
-//---------------------------------------------------------------------
-class PokemonDetails {
-  final List<Stat> stats;
-  final List<String> abilities;
-  final List<String> evolutions;
-  final List<String> moves;
-
-  PokemonDetails({
-    required this.stats,
-    required this.abilities,
-    required this.evolutions,
-    required this.moves,
-  });
-
-  factory PokemonDetails.fromJson(Map<String, dynamic> json) {
-    return PokemonDetails(
-      stats: (json['stats'] as List).map((e) => Stat.fromJson(e)).toList(),
-      abilities: (json['abilities'] as List)
-          .map((e) => e['ability']['name'] as String)
-          .toList(),
-      evolutions: [],
-      moves: (json['moves'] as List)
-          .map((e) => e['move']['name'] as String)
-          .toList(),
-    );
-  }
-}
-
-class Stat {
-  final String name;
-  final int value;
-
-  Stat({required this.name, required this.value});
-
-  factory Stat.fromJson(Map<String, dynamic> json) {
-    return Stat(
-      name: json['stat']['name'] as String,
-      value: json['base_stat'] as int,
-    );
-  }
-}
 
 Future<List<Map<String, dynamic>>> fetchData(String pokemon) async {
   var pokemonUrl = "https://pokeapi.co/api/v2/pokemon/$pokemon";

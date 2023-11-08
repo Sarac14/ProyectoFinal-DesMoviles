@@ -7,6 +7,8 @@ import 'package:path/path.dart';
 import 'package:pokedex_proyecto_final/home_screen.dart';
 import 'package:pokedex_proyecto_final/poke_database.dart';
 import 'package:http/http.dart' as http;
+import 'package:pokedex_proyecto_final/pokemon.dart';
+
 
 import 'details_screen.dart';
 
@@ -17,7 +19,7 @@ class FavoritePokemonScreen extends StatefulWidget {
 }
 
 class _FavoritePokemonScreenState extends State<FavoritePokemonScreen> {
-  late Future<List<PokemonItem>> _favoritePokemonFuture;
+  late Future<List<Pokemon>> _favoritePokemonFuture;
   Set<int> favoritePokemons = Set<int>();
   bool isFavorite = false;
 
@@ -34,7 +36,7 @@ class _FavoritePokemonScreenState extends State<FavoritePokemonScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Favorite Pokemon')),
-      body: FutureBuilder<List<PokemonItem>>(
+      body: FutureBuilder<List<Pokemon>>(
         future: _favoritePokemonFuture,
         builder: (context, snapshot) {
           if (snapshot.hasData && snapshot.data != null && snapshot.data!.isNotEmpty) {
@@ -55,7 +57,7 @@ class _FavoritePokemonScreenState extends State<FavoritePokemonScreen> {
                       context,
                       MaterialPageRoute(
                         builder: (_) => DetailsScreen(
-                            Pokemon.fromPokemonItem(pokemon), getColorForType(pokemon.types)
+                            pokemon, getColorForType(pokemon.types)
                         ),
                       ),
                     );
@@ -187,7 +189,7 @@ class _FavoritePokemonScreenState extends State<FavoritePokemonScreen> {
   }
 }
 
-Future<List<PokemonItem>> enviandoUrlFavoritoApi() async {
+Future<List<Pokemon>> enviandoUrlFavoritoApi() async {
   List<String> urls = await PokeDatabase.instance.getFavoritePokemonUrls();
   return fetchSpecificPokemonDataFromUrls(urls);
 }
@@ -199,14 +201,14 @@ void showErrorMessage(String message) {
   ));
 }
 
-Future<List<PokemonItem>> fetchSpecificPokemonDataFromUrls(List<String> pokemonUrls) async {
-  List<PokemonItem> pokemonItems = [];
+Future<List<Pokemon>> fetchSpecificPokemonDataFromUrls(List<String> pokemonUrls) async {
+  List<Pokemon> pokemonItems = [];
   try {
     for (var url in pokemonUrls) {
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final pokemon = PokemonItem.fromJson(data);
+        final pokemon = Pokemon.fromJson(data);
         print('Nombre: ${pokemon.name}, ID: ${pokemon.id}, Tipos: ${pokemon.types}');
         pokemonItems.add(pokemon);
       } else {
@@ -222,7 +224,7 @@ Future<List<PokemonItem>> fetchSpecificPokemonDataFromUrls(List<String> pokemonU
 }
 
 
-class PokemonItem {
+/*class PokemonItem {
   final int id;
   final String name;
   final String imageUrl;
@@ -254,4 +256,4 @@ class PokemonItem {
       weight: (json['weight']) as int,
     );
   }
-}
+}*/
