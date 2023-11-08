@@ -20,6 +20,14 @@ La aplicación obtiene datos de Pokémon de la API de Pokémon. Aquí hay un res
 ## Decisiones de Diseño
 - La aplicación utiliza Flutter para la creación de interfaces de usuario multiplataforma.
 
+- Se utiliza una base de datos SQLite para almacenar los Pokémon y sus estados favoritos.
+
+- Los Pokémon favoritos se muestran en una cuadrícula en FavoritePokemonScreen, con una variedad de detalles visuales, como colores basados en tipos y una imagen de Pokeball decorativa.
+
+- Se gestionan errores y mensajes de estado a través de notificaciones emergentes (SnackBar) que informan al usuario sobre problemas o acciones exitosas.
+
+- Se utiliza el patrón FutureBuilder para manejar la carga de datos asincrónicos y mostrar una barra de progreso mientras se obtienen los datos.
+
 ## Tecnologías Utilizadas
 - Flutter: La aplicación está construida utilizando el framework de desarrollo de aplicaciones móviles Flutter.
 
