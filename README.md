@@ -1,5 +1,5 @@
 # Documentación de la Aplicación
-La aplicación que proporcionas es una aplicación Flutter para dispositivos móviles que muestra una lista de Pokémon favoritos. Los usuarios pueden agregar Pokémon a su lista de favoritos y ver detalles de los mismos. La aplicación se conecta a la API de Pokémon para obtener información sobre los Pokémon, como su nombre, imagen, tipos, altura y peso.
+La aplicación Pokedex es una aplicación que permite a los usuarios obtener información detallada sobre Pokémon utilizando la API pública PokeApi. Además, en nestra versión de la pokedex los usuarios pueden agregar Pokémon a su lista de favoritos y ver detalles de los mismos. La aplicación proporciona información sobre los Pokémon, como su nombre, imagen, tipos, altura y peso; así como también los movimientos de cada uno.
 
 ## Cómo Funciona la Aplicación
 La aplicación consta de las siguientes partes clave:
