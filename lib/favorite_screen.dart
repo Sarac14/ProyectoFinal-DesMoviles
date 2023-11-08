@@ -24,7 +24,9 @@ class _FavoritePokemonScreenState extends State<FavoritePokemonScreen> {
   @override
   void initState() {
     super.initState();
+    // Cargando la lista de Pokémon favoritos al inicio.
     loadFavoritePokemons();
+    // Obtiene datos de Pokémon a partir de las URLs almacenadas en la base de datos.
     _favoritePokemonFuture = enviandoUrlFavoritoApi();
   }
 

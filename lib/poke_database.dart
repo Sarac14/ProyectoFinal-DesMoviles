@@ -33,6 +33,7 @@ class PokeDatabase {
     );
   }
 
+  // Inserta un Pokémon en la base de datos.
   Future<int> insertPokemon(PokemonDB pokemon) async {
     final db = await database;
     return await db.insert(
@@ -64,17 +65,18 @@ class PokeDatabase {
     }
   }
 
+  // Marca o desmarca un Pokémon como favorito en la base de datos.
   Future<bool> toggleFavoritePokemon(int pokemonId) async {
     final db = await database;
     try {
       return await db.transaction((txn) async {
-        // Check if the item already exists in the database
+        // verifica si ya existe en la base de datos
         final result = await txn.rawQuery(
           'SELECT * FROM favorite_pokemon WHERE pokemon_id = ?',
           [pokemonId],
         );
 
-        // If the item exists, delete it from the database
+        // si existe, lo elimina de la base de datos
         if (result.isNotEmpty) {
           await txn.rawDelete(
             'DELETE FROM favorite_pokemon WHERE pokemon_id = ?',
@@ -82,7 +84,7 @@ class PokeDatabase {
           );
           return false;
         }
-        // If the item does not exist, add it to the database
+        // si no existe, se agrega a la base de datos
         else {
           await txn.rawInsert(
             'INSERT INTO favorite_pokemon(pokemon_id) VALUES(?)',
@@ -149,7 +151,7 @@ class PokeDatabase {
     return favorites.isNotEmpty;
   }
 
-  // Agrega este método a la clase PokeDatabase
+  //Imprime todos los pokemones guardados en la base de datos en la consola
   Future<void> printAllPokemons() async {
     final db = await database;
     final List<Map<String, dynamic>> pokemons = await db.query('pokemon');

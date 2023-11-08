@@ -4,10 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:path/path.dart';
-import 'package:path/path.dart';
-import 'package:path/path.dart';
 import 'package:pokedex_proyecto_final/details_screen.dart';
-import 'package:pokedex_proyecto_final/main.dart';
 import 'package:pokedex_proyecto_final/poke_database.dart';
 
 import 'favorite_screen.dart';
@@ -233,11 +230,13 @@ class _HomeScreenState extends State<HomeScreen> {
                             left: 5,
                             bottom: 10,
                             child: IconButton(
+                              // Verificar si el Pokémon actual es un favorito para cambiar el ícono.
                               icon: favoritePokemons.contains(pokemon.id)
                                   ? Icon(Icons.favorite, color: Colors.red)
                                   : Icon(Icons.favorite_border),
                               onPressed: () {
                                 setState(() {
+                                  // Verificar si el Pokémon actual es un favorito para cambiar el ícono.
                                   if (favoritePokemons.contains(pokemon.id)) {
                                     agregarFavoritePokemon(pokemon.id); // Función para quitar de favoritos
                                     favoritePokemons.remove(pokemon.id);
@@ -319,64 +318,80 @@ class _HomeScreenState extends State<HomeScreen> {
     return int.tryParse(s) != null;
   }
 
+  // Este método se utiliza para buscar información de Pokémon desde la API PokeAPI.
   Future<void> fetchPokemonData([int offset = 0]) async {
     try {
       Uri url;
 
+      // Verifica si el campo de búsqueda no está vacío.
       if (searchController.text.isNotEmpty) {
+        // Comprueba si la entrada de búsqueda es un número (ID de Pokémon) o un nombre de Pokémon.
         final isId = isNumeric(searchController.text);
 
+        // Construye la URL de la API según si se ingresó un ID o un nombre de Pokémon.
         if (isId) {
-          url = Uri.https('pokeapi.co',
-              '/api/v2/pokemon/${int.parse(searchController.text)}');
+          url = Uri.https('pokeapi.co', '/api/v2/pokemon/${int.parse(searchController.text)}');
         } else {
-          url = Uri.https('pokeapi.co',
-              '/api/v2/pokemon/${searchController.text.toLowerCase()}');
+          url = Uri.https('pokeapi.co', '/api/v2/pokemon/${searchController.text.toLowerCase()}');
         }
 
+        // Realiza una solicitud HTTP GET a la URL construida.
         final response = await http.get(url);
+
+        // Verifica si la respuesta HTTP tiene éxito (código 200).
         if (response.statusCode == 200) {
+          // Analiza los datos de la respuesta JSON para obtener la información del Pokémon.
           final data = jsonDecode(response.body);
           final pokemon = Pokemon.fromJson(data);
+
+          // Actualiza el contenido del PagingController con el Pokémon encontrado.
           _pagingController.itemList = [pokemon];
           _pagingController.appendLastPage([]);
-
-          return;
         } else {
+          // Muestra un mensaje si no se encontró el Pokémon.
           showErrorMessage("No se encontró el Pokémon");
-          return;
-        }
-      }
-
-      url = Uri.https('pokeapi.co', '/api/v2/pokemon', {
-        "offset": offset.toString(),
-        "limit": _pageSize.toString(),
-      });
-
-      final response = await http.get(url);
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final nextPokemons = (data['results'] as List).map((itemData) async {
-          final detailsResponse = await http.get(Uri.parse(itemData['url']));
-          final detailsData = jsonDecode(detailsResponse.body);
-          return Pokemon.fromJson(detailsData);
-        }).toList();
-
-        final pokemonList = await Future.wait(nextPokemons);
-        final isLastPage = pokemonList.length < _pageSize;
-        if (isLastPage) {
-          _pagingController.appendLastPage(pokemonList);
-        } else {
-          _pagingController.appendPage(pokemonList, offset + _pageSize);
         }
       } else {
-        _pagingController.error = "Error fetching data";
+        // Si no se proporcionó una entrada de búsqueda, se obtienen los Pokémon de la API.
+        url = Uri.https('pokeapi.co', '/api/v2/pokemon', {
+          "offset": offset.toString(),
+          "limit": _pageSize.toString(),
+        });
+
+        // Realiza una solicitud HTTP GET para obtener una lista de Pokémon.
+        final response = await http.get(url);
+        if (response.statusCode == 200) {
+          // Analiza los datos de la respuesta JSON para obtener la lista de Pokémon.
+          final data = jsonDecode(response.body);
+          final nextPokemons = (data['results'] as List).map((itemData) async {
+            final detailsResponse = await http.get(Uri.parse(itemData['url']));
+            final detailsData = jsonDecode(detailsResponse.body);
+            return Pokemon.fromJson(detailsData);
+          }).toList();
+
+          // Espera a que se completen las solicitudes para obtener detalles de Pokémon.
+          final pokemonList = await Future.wait(nextPokemons);
+          final isLastPage = pokemonList.length < _pageSize;
+
+          // Actualiza el PagingController con la lista de Pokémon encontrada.
+          if (isLastPage) {
+            _pagingController.appendLastPage(pokemonList);
+          } else {
+            _pagingController.appendPage(pokemonList, offset + _pageSize);
+          }
+        } else {
+          // Muestra un mensaje de error si la solicitud de la API falla.
+          _pagingController.error = "Error fetching data";
+        }
       }
     } catch (error) {
+      // Maneja errores generales y muestra mensajes de error.
       _pagingController.error = error;
       showErrorMessage(error.toString());
     }
   }
+
+
 
   void showErrorMessage(String message) {
     ScaffoldMessenger.of(context as BuildContext).showSnackBar(SnackBar(
@@ -391,6 +406,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
+  // Carga la lista de Pokémon favoritos del almacenamiento local.
   Future<void> loadFavoritePokemons() async {
     final favoriteList = await PokeDatabase.instance.getFavoritePokemons();
     setState(() {
