@@ -265,10 +265,9 @@ class _DetailsScreenState extends State<DetailsScreen> {
             ],
           ),
         );
-      case 4: // MOVES
+      case 4: // HABILIDADES
         return Container(
-          height: 300,
-          padding: const EdgeInsets.fromLTRB(20.0, 0.0, 20.0, 20.0),
+          padding: const EdgeInsets.all(20.0),
           child: FutureBuilder<List<Map<String, dynamic>>>(
             future: fetchData(widget.pokemon.name),
             builder: (context, snapshot) {
@@ -277,52 +276,18 @@ class _DetailsScreenState extends State<DetailsScreen> {
               } else if (snapshot.hasError) {
                 return Text('Error: ${snapshot.error}');
               } else {
-                return ListView.builder(
-                  padding: EdgeInsets.only(top: 6.0), // Ajusta el padding superior
-                  itemCount: snapshot.data!.length,
-                  itemBuilder: (context, index) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 6.0),
-                      child: Card(
-                        elevation: 4,
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                width: double.infinity,
-                                color: widget.color,
-                                padding: EdgeInsets.all(8.0),
-                                child: Center(
-                                  child: Text(
-                                    '${snapshot.data![index]["name"]}',
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-                              ),
-                              SizedBox(height: 8),
-                              Container(
-                                color: Colors.white,
-                                padding: EdgeInsets.all(8.0),
-                                child: Center(
-                                  child: Text(
-                                    '${snapshot.data![index]["description"]}',
-                                    style: TextStyle(fontSize: 16),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: snapshot.data!.map((ability) {
+                    final abilityName = ability["name"];
+                    final abilityDescription = ability["description"];
+
+                    return AbilityCard(
+                      color: widget.color,
+                      abilityName: abilityName,
+                      abilityDescription: abilityDescription,
                     );
-                  },
+                  }).toList(),
                 );
               }
             },
@@ -334,6 +299,86 @@ class _DetailsScreenState extends State<DetailsScreen> {
   }
 }
 
+class AbilityCard extends StatefulWidget {
+  final Color color;
+  final String abilityName;
+  final String abilityDescription;
+
+  const AbilityCard({
+    Key? key,
+    required this.color,
+    required this.abilityName,
+    required this.abilityDescription,
+  }) : super(key: key);
+
+  @override
+  _AbilityCardState createState() => _AbilityCardState();
+}
+
+class _AbilityCardState extends State<AbilityCard> {
+  bool isExpanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6.0),
+      child: Card(
+        elevation: 4,
+        child: GestureDetector(
+          onTap: () {
+            setState(() {
+              isExpanded = !isExpanded;
+            });
+          },
+          child: Container(
+            color: widget.color,
+            padding: EdgeInsets.all(8.0),
+            child: Column(
+              children: [
+                Text(
+                  widget.abilityName,
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                if (isExpanded)
+                  SizedBox(height: 8),
+                if (isExpanded)
+                  Text(
+                    widget.abilityDescription,
+                    style: TextStyle(fontSize: 16),
+                    textAlign: TextAlign.center,
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+class AbilityDetailsScreen extends StatelessWidget {
+  final String abilityName;
+  final String abilityDescription;
+
+  AbilityDetailsScreen({required this.abilityName, required this.abilityDescription});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(abilityName),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Text(abilityDescription),
+      ),
+    );
+  }
+}
 
 Future<List<Map<String, dynamic>>> fetchData(String pokemon) async {
   var pokemonUrl = "https://pokeapi.co/api/v2/pokemon/$pokemon";
