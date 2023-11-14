@@ -43,6 +43,10 @@ dependencies:
   path: ^1.8.3
   path_provider: ^2.1.1
   provider: ^6.0.5
+  video_player: ^2.8.1
+  chewie: ^1.7.1
+  flutter_launcher_icons: ^0.13.1
+  flare_flutter: ^3.0.2
 
 dev_dependencies:
   flutter_test:

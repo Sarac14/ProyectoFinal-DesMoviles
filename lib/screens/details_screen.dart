@@ -1,12 +1,7 @@
-import 'dart:convert';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:pokedex_proyecto_final/poke_database.dart';
 
-import 'Pokemon.dart';
-import 'home_screen.dart';
+import '../Entities/Pokemon.dart';
 
 class DetailsScreen extends StatefulWidget {
   final Pokemon pokemon;

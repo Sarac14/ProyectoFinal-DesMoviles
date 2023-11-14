@@ -1,5 +1,4 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import '../database/poke_database.dart';
 
 class Pokemon {
   final int id;
@@ -88,4 +87,10 @@ class PokemonCard {
     required this.imageUrl,
     required this.types,
   });
+
+  PokemonCard.fromPokemonDB(PokemonDB pokemonDB)
+      : id = pokemonDB.id,
+        name = pokemonDB.name,
+        imageUrl = pokemonDB.image,
+        types = [pokemonDB.type];
 }

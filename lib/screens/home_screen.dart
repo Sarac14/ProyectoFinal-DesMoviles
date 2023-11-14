@@ -4,9 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:path/path.dart';
-import 'package:pokedex_proyecto_final/details_screen.dart';
-import 'package:pokedex_proyecto_final/poke_database.dart';
-import 'Pokemon.dart';
+import 'package:pokedex_proyecto_final/screens/details_screen.dart';
+import '../Entities/Pokemon.dart';
+import '../database/poke_database.dart';
+import '../widgets/search_delegate.dart';
 import 'favorite_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -76,43 +77,26 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           Positioned(
-            top: 115,
-            left: 20,
-            right: 20,
-            child: Row(
-              mainAxisSize: MainAxisSize.max,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.search, size: 26),
-                  onPressed: () async {
-                    _pagingController.refresh();
-                    await fetchPokemonData();
-                  },
-                ),
-                Expanded(
-                  child: TextFormField(
-                    controller: searchController,
-                    decoration: InputDecoration(
-                        isDense: true,
-                        hintText: 'Buscar Pokemon por numero o nombre',
-                        contentPadding: EdgeInsets.zero,
-                        hintStyle: const TextStyle(
-                          fontSize: 14,
-                          height: 2.5,
-                        ),
-                        border: InputBorder.none,
-                        suffixIcon: IconButton(
-                          icon: const Icon(Icons.clear),
-                          onPressed: () {
-                            searchController.clear();
-                            _pagingController.refresh();
-                            fetchPokemonData();
-                          },
-                        )),
+            top: 80,
+            right: 80,
+            child: GestureDetector(
+              onTap: () {
+                showSearch(context: context, delegate: SearchPokemonDelegate());
+              },
+              child: const Row(
+                mainAxisSize: MainAxisSize.max,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // Icono de lupa en lugar del texto "Search"
+                  Icon(
+                    Icons.search,
+                    size: 30,
+                    color: Colors.black,
                   ),
-                ),
-              ],
+                  // Resto del código...
+                  // ... (el resto del código relacionado con la barra de búsqueda)
+                ],
+              ),
             ),
           ),
           Positioned(
@@ -134,38 +118,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         vertical: 8.0, horizontal: 12),
                     child: Container(
                       decoration: BoxDecoration(
-                        // color: Colors.green,
-                        color: type == "grass"
-                            ? Colors.greenAccent
-                            : type == "fire"
-                                ? Colors.redAccent
-                                : type == "water"
-                                    ? Colors.blue
-                                    : type == "poison"
-                                        ? Colors.deepPurpleAccent
-                                        : type == "electric"
-                                            ? Colors.amber
-                                            : type == "rock"
-                                                ? Colors.grey
-                                                : type == "ground"
-                                                    ? Colors.brown
-                                                    : type == "psychic"
-                                                        ? Colors.indigo
-                                                        : type == "fighting"
-                                                            ? Colors.orange
-                                                            : type == "bug"
-                                                                ? Colors
-                                                                    .lightGreen
-                                                                : type ==
-                                                                        "ghost"
-                                                                    ? Colors
-                                                                        .deepPurple
-                                                                    : type ==
-                                                                            "normal"
-                                                                        ? Colors
-                                                                            .black26
-                                                                        : Colors
-                                                                            .pink,
+                        color: getColorForType(pokemon.types),
                         borderRadius:
                             const BorderRadius.all(Radius.circular(20)),
                       ),
@@ -277,39 +230,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (_) => DetailsScreen(
-                                    pokemonDetails as Pokemon,
-                                    type == "grass"
-                                        ? Colors.greenAccent
-                                        : type == "fire"
-                                            ? Colors.redAccent
-                                            : type == "water"
-                                                ? Colors.blue
-                                                : type == "poison"
-                                                    ? Colors.deepPurpleAccent
-                                                    : type == "electric"
-                                                        ? Colors.amber
-                                                        : type == "rock"
-                                                            ? Colors.grey
-                                                            : type == "ground"
-                                                                ? Colors.brown
-                                                                : type ==
-                                                                        "psychic"
-                                                                    ? Colors
-                                                                        .indigo
-                                                                    : type ==
-                                                                            "fighting"
-                                                                        ? Colors
-                                                                            .orange
-                                                                        : type ==
-                                                                                "bug"
-                                                                            ? Colors.lightGreen
-                                                                            : type == "ghost"
-                                                                                ? Colors.deepPurple
-                                                                                : type == "normal"
-                                                                                    ? Colors.grey
-                                                                                    : Colors.pink,
-                                  )));
+                              builder: (_) => DetailsScreen(pokemonDetails,
+                                  getColorForType(pokemonDetails.types))));
                     });
                   },
                 );
@@ -414,5 +336,35 @@ Future<Pokemon> fetchPokemonDetailsData(String pokemonName) async {
     print("Error in fetchPokemonDetailsData: $e");
     print(stackTrace);
     throw e;
+  }
+}
+
+Color getColorForType(List<String> types) {
+  if (types.contains('grass')) {
+    return Colors.greenAccent;
+  } else if (types.contains('fire')) {
+    return Colors.redAccent;
+  } else if (types.contains('water')) {
+    return Colors.blue;
+  } else if (types.contains('poison')) {
+    return Colors.deepPurpleAccent;
+  } else if (types.contains('electric')) {
+    return Colors.amber;
+  } else if (types.contains('rock')) {
+    return Colors.grey;
+  } else if (types.contains('ground')) {
+    return Colors.brown;
+  } else if (types.contains('psychic')) {
+    return Colors.indigo;
+  } else if (types.contains('fighting')) {
+    return Colors.orange;
+  } else if (types.contains('bug')) {
+    return Colors.lightGreen;
+  } else if (types.contains('ghost')) {
+    return Colors.deepPurple;
+  } else if (types.contains('normal')) {
+    return Colors.grey;
+  } else {
+    return Colors.pink;
   }
 }

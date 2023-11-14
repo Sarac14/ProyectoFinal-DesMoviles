@@ -4,7 +4,8 @@ import 'package:path/path.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-import 'Pokemon.dart';
+import '../Entities/Pokemon.dart';
+
 
 class PokeDatabase {
   static final PokeDatabase instance = PokeDatabase._();
@@ -288,6 +289,29 @@ class PokeDatabase {
       }
     }
     return favoritePokemons;
+  }
+
+  Future<List<PokemonCard>> searchPokemons(String query) async {
+    final db = await database;
+    List<Map<String, dynamic>> results = await db.rawQuery(
+      'SELECT * FROM pokemon WHERE name LIKE ?',
+      ['$query%'], // Agrega el '%' al final para buscar nombres que comienzan con la cadena.
+    );
+
+    List<PokemonCard> pokemons = [];
+
+    for (var result in results) {
+      PokemonDB pokemon = PokemonDB(
+        id: result['id'] as int,
+        name: result['name'] as String,
+        url: result['url'] as String,
+        type: result['type'] as String,
+        image: result['image'] as String,
+      );
+      PokemonCard pokemonCard = PokemonCard.fromPokemonDB(pokemon);
+      pokemons.add(pokemonCard);
+    }
+    return pokemons;
   }
 
   Future<List<String>> getFavoritePokemonUrls() async {

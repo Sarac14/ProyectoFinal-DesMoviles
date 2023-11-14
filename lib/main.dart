@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:pokedex_proyecto_final/home_screen.dart';
-import 'package:pokedex_proyecto_final/poke_database.dart';
+import 'package:pokedex_proyecto_final/screens/home_screen.dart';
 import 'package:flutter/widgets.dart';
+import 'database/poke_database.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

@@ -4,9 +4,9 @@ import 'dart:convert';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart';
-import 'package:pokedex_proyecto_final/Pokemon.dart';
-import 'package:pokedex_proyecto_final/poke_database.dart';
+import 'package:pokedex_proyecto_final/Entities/Pokemon.dart';
 import 'package:http/http.dart' as http;
+import '../database/poke_database.dart';
 import 'details_screen.dart';
 import 'home_screen.dart';
 
