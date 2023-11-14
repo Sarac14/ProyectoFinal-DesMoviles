@@ -4,9 +4,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:pokedex_proyecto_final/poke_database.dart';
-import 'package:pokedex_proyecto_final/pokemon.dart';
 
-
+import 'Pokemon.dart';
 import 'home_screen.dart';
 
 class DetailsScreen extends StatefulWidget {
@@ -21,6 +20,11 @@ class DetailsScreen extends StatefulWidget {
 
 class _DetailsScreenState extends State<DetailsScreen> {
   int selectedSection = 0;
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -95,19 +99,19 @@ class _DetailsScreenState extends State<DetailsScreen> {
             ),
           ),
           Positioned(
-              top: (height * 0.18),
-              left: (width / 2) - 100,
-              child:
-              Hero(
-                tag: 'pokemon-${widget.pokemon.id}',
-                child: CachedNetworkImage(
-                  imageUrl: widget.pokemon.imageUrl,
-                  placeholder: (context, url) => const CircularProgressIndicator(),
-                  errorWidget: (context, url, error) => const Icon(Icons.error),
-                  height: 200,
-                  fit: BoxFit.fitHeight,
-                ),
+            top: (height * 0.18),
+            left: (width / 2) - 100,
+            child: Hero(
+              tag: 'pokemon-${widget.pokemon.id}',
+              child: CachedNetworkImage(
+                imageUrl: widget.pokemon.imageUrl,
+                placeholder: (context, url) =>
+                    const CircularProgressIndicator(),
+                errorWidget: (context, url, error) => const Icon(Icons.error),
+                height: 200,
+                fit: BoxFit.fitHeight,
               ),
+            ),
           )
         ],
       ),
@@ -268,29 +272,15 @@ class _DetailsScreenState extends State<DetailsScreen> {
       case 4: // HABILIDADES
         return Container(
           padding: const EdgeInsets.all(20.0),
-          child: FutureBuilder<List<Map<String, dynamic>>>(
-            future: fetchData(widget.pokemon.name),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return Center(child: CircularProgressIndicator());
-              } else if (snapshot.hasError) {
-                return Text('Error: ${snapshot.error}');
-              } else {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: snapshot.data!.map((ability) {
-                    final abilityName = ability["name"];
-                    final abilityDescription = ability["description"];
-
-                    return AbilityCard(
-                      color: widget.color,
-                      abilityName: abilityName,
-                      abilityDescription: abilityDescription,
-                    );
-                  }).toList(),
-                );
-              }
-            },
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: widget.pokemon.getAbilities().map((ability) {
+              return AbilityCard(
+                color: widget.color,
+                abilityName: ability.name,
+                abilityDescription: ability.description,
+              );
+            }).toList(),
           ),
         );
       default:
@@ -344,8 +334,7 @@ class _AbilityCardState extends State<AbilityCard> {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                if (isExpanded)
-                  SizedBox(height: 8),
+                if (isExpanded) SizedBox(height: 8),
                 if (isExpanded)
                   Text(
                     widget.abilityDescription,
@@ -360,11 +349,13 @@ class _AbilityCardState extends State<AbilityCard> {
     );
   }
 }
+
 class AbilityDetailsScreen extends StatelessWidget {
   final String abilityName;
   final String abilityDescription;
 
-  AbilityDetailsScreen({required this.abilityName, required this.abilityDescription});
+  AbilityDetailsScreen(
+      {required this.abilityName, required this.abilityDescription});
 
   @override
   Widget build(BuildContext context) {
@@ -379,31 +370,3 @@ class AbilityDetailsScreen extends StatelessWidget {
     );
   }
 }
-
-Future<List<Map<String, dynamic>>> fetchData(String pokemon) async {
-  var pokemonUrl = "https://pokeapi.co/api/v2/pokemon/$pokemon";
-  var response = await http.get(Uri.parse(pokemonUrl));
-  var data = json.decode(response.body);
-
-  List<Map<String, dynamic>> abilitiesList = [];
-
-  for (var ability in data['abilities']) {
-    var abilitiesUrl = ability['ability']['url'];
-    var abilitiesResponse = await http.get(Uri.parse(abilitiesUrl));
-    var abilitiesData = json.decode(abilitiesResponse.body);
-
-    // Verificación de la descripción en inglés
-    var englishDescription = abilitiesData['effect_entries']
-        .firstWhere((entry) => entry['language']['name'] == 'en', orElse: () => null);
-
-    var abilitiesName = abilitiesData['name'];
-    var abilitiesDescription = englishDescription != null
-        ? englishDescription['effect']
-        : "Descripción no disponible en inglés";
-
-    abilitiesList.add({'name': abilitiesName, 'description': abilitiesDescription});
-  }
-
-  return abilitiesList;
-}
-

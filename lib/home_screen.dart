@@ -6,9 +6,7 @@ import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:path/path.dart';
 import 'package:pokedex_proyecto_final/details_screen.dart';
 import 'package:pokedex_proyecto_final/poke_database.dart';
-import 'package:pokedex_proyecto_final/pokemon.dart';
-
-
+import 'Pokemon.dart';
 import 'favorite_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -20,7 +18,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Set<int> favoritePokemons = Set<int>();
   bool isFavorite = false;
   static const _pageSize = 20;
-  final PagingController<int, Pokemon> _pagingController =
+  final PagingController<int, PokemonCard> _pagingController =
       PagingController(firstPageKey: 0);
   final TextEditingController searchController = TextEditingController();
 
@@ -42,9 +40,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
+
     return Scaffold(
       body: Stack(
         children: [
@@ -121,13 +119,13 @@ class _HomeScreenState extends State<HomeScreen> {
             top: 150,
             bottom: 0,
             width: width,
-            child: PagedGridView<int, Pokemon>(
+            child: PagedGridView<int, PokemonCard>(
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
                 childAspectRatio: 1.4,
               ),
               pagingController: _pagingController,
-              builderDelegate: PagedChildBuilderDelegate<Pokemon>(
+              builderDelegate: PagedChildBuilderDelegate<PokemonCard>(
                   itemBuilder: (context, pokemon, index) {
                 var type = pokemon.types.first;
                 return InkWell(
@@ -240,12 +238,16 @@ class _HomeScreenState extends State<HomeScreen> {
                                 setState(() {
                                   // Verificar si el Pokémon actual es un favorito para cambiar el ícono.
                                   if (favoritePokemons.contains(pokemon.id)) {
-                                    agregarFavoritePokemon(pokemon.id); // Función para quitar de favoritos
+                                    agregarFavoritePokemon(pokemon
+                                        .id); // Función para quitar de favoritos
                                     favoritePokemons.remove(pokemon.id);
                                   } else {
-                                    agregarFavoritePokemon(pokemon.id); // Función para agregar a favoritos
+                                    agregarFavoritePokemon(pokemon
+                                        .id); // Función para agregar a favoritos
                                     favoritePokemons.add(pokemon.id);
                                   }
+                                  PokeDatabase.instance
+                                      .printAllFavoritePokemons();
                                 });
                               },
                             ),
@@ -257,8 +259,10 @@ class _HomeScreenState extends State<HomeScreen> {
                               tag: 'pokemon-${pokemon.id}',
                               child: CachedNetworkImage(
                                 imageUrl: pokemon.imageUrl,
-                                placeholder: (context, url) => const CircularProgressIndicator(),
-                                errorWidget: (context, url, error) => const Icon(Icons.error),
+                                placeholder: (context, url) =>
+                                    const CircularProgressIndicator(),
+                                errorWidget: (context, url, error) =>
+                                    const Icon(Icons.error),
                                 height: 90,
                                 fit: BoxFit.fitHeight,
                               ),
@@ -269,43 +273,44 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   onTap: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) => DetailsScreen(
-                                  pokemon,
-                                  type == "grass"
-                                      ? Colors.greenAccent
-                                      : type == "fire"
-                                          ? Colors.redAccent
-                                          : type == "water"
-                                              ? Colors.blue
-                                              : type == "poison"
-                                                  ? Colors.deepPurpleAccent
-                                                  : type == "electric"
-                                                      ? Colors.amber
-                                                      : type == "rock"
-                                                          ? Colors.grey
-                                                          : type == "ground"
-                                                              ? Colors.brown
-                                                              : type ==
-                                                                      "psychic"
-                                                                  ? Colors
-                                                                      .indigo
-                                                                  : type ==
-                                                                          "fighting"
-                                                                      ? Colors
-                                                                          .orange
-                                                                      : type ==
-                                                                              "bug"
-                                                                          ? Colors
-                                                                              .lightGreen
-                                                                          : type == "ghost"
-                                                                              ? Colors.deepPurple
-                                                                              : type == "normal"
-                                                                                  ? Colors.grey
-                                                                                  : Colors.pink,
-                                )));
+                    pokemonFetchData(pokemon.name).then((pokemonDetails) {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => DetailsScreen(
+                                    pokemonDetails as Pokemon,
+                                    type == "grass"
+                                        ? Colors.greenAccent
+                                        : type == "fire"
+                                            ? Colors.redAccent
+                                            : type == "water"
+                                                ? Colors.blue
+                                                : type == "poison"
+                                                    ? Colors.deepPurpleAccent
+                                                    : type == "electric"
+                                                        ? Colors.amber
+                                                        : type == "rock"
+                                                            ? Colors.grey
+                                                            : type == "ground"
+                                                                ? Colors.brown
+                                                                : type ==
+                                                                        "psychic"
+                                                                    ? Colors
+                                                                        .indigo
+                                                                    : type ==
+                                                                            "fighting"
+                                                                        ? Colors
+                                                                            .orange
+                                                                        : type ==
+                                                                                "bug"
+                                                                            ? Colors.lightGreen
+                                                                            : type == "ghost"
+                                                                                ? Colors.deepPurple
+                                                                                : type == "normal"
+                                                                                    ? Colors.grey
+                                                                                    : Colors.pink,
+                                  )));
+                    });
                   },
                 );
               }),
@@ -320,80 +325,36 @@ class _HomeScreenState extends State<HomeScreen> {
     return int.tryParse(s) != null;
   }
 
-  // Este método se utiliza para buscar información de Pokémon desde la API PokeAPI.
-  Future<void> fetchPokemonData([int offset = 0]) async {
+  Future<void> fetchPokemonData([int pageKey = 0]) async {
     try {
-      Uri url;
+      final offset = pageKey * _pageSize;
 
-      // Verifica si el campo de búsqueda no está vacío.
-      if (searchController.text.isNotEmpty) {
-        // Comprueba si la entrada de búsqueda es un número (ID de Pokémon) o un nombre de Pokémon.
-        final isId = isNumeric(searchController.text);
+      await Future.delayed(Duration(seconds: 2));
 
-        // Construye la URL de la API según si se ingresó un ID o un nombre de Pokémon.
-        if (isId) {
-          url = Uri.https('pokeapi.co', '/api/v2/pokemon/${int.parse(searchController.text)}');
-        } else {
-          url = Uri.https('pokeapi.co', '/api/v2/pokemon/${searchController.text.toLowerCase()}');
-        }
+      final pokemonList = await PokeDatabase.instance
+          .getPokemonsWithLimitAndOffset(_pageSize, offset);
 
-        // Realiza una solicitud HTTP GET a la URL construida.
-        final response = await http.get(url);
+      final pokemonConverted = pokemonList
+          .map((pokemon) => PokemonCard(
+                id: pokemon.id,
+                name: pokemon.name,
+                imageUrl: pokemon.image,
+                types: [pokemon.type],
+              ))
+          .toList();
 
-        // Verifica si la respuesta HTTP tiene éxito (código 200).
-        if (response.statusCode == 200) {
-          // Analiza los datos de la respuesta JSON para obtener la información del Pokémon.
-          final data = jsonDecode(response.body);
-          final pokemon = Pokemon.fromJson(data);
+      final isLastPage = pokemonList.length < _pageSize;
 
-          // Actualiza el contenido del PagingController con el Pokémon encontrado.
-          _pagingController.itemList = [pokemon];
-          _pagingController.appendLastPage([]);
-        } else {
-          // Muestra un mensaje si no se encontró el Pokémon.
-          showErrorMessage("No se encontró el Pokémon");
-        }
+      if (isLastPage) {
+        _pagingController.appendLastPage(pokemonConverted);
       } else {
-        // Si no se proporcionó una entrada de búsqueda, se obtienen los Pokémon de la API.
-        url = Uri.https('pokeapi.co', '/api/v2/pokemon', {
-          "offset": offset.toString(),
-          "limit": _pageSize.toString(),
-        });
-
-        // Realiza una solicitud HTTP GET para obtener una lista de Pokémon.
-        final response = await http.get(url);
-        if (response.statusCode == 200) {
-          // Analiza los datos de la respuesta JSON para obtener la lista de Pokémon.
-          final data = jsonDecode(response.body);
-          final nextPokemons = (data['results'] as List).map((itemData) async {
-            final detailsResponse = await http.get(Uri.parse(itemData['url']));
-            final detailsData = jsonDecode(detailsResponse.body);
-            return Pokemon.fromJson(detailsData);
-          }).toList();
-
-          // Espera a que se completen las solicitudes para obtener detalles de Pokémon.
-          final pokemonList = await Future.wait(nextPokemons);
-          final isLastPage = pokemonList.length < _pageSize;
-
-          // Actualiza el PagingController con la lista de Pokémon encontrada.
-          if (isLastPage) {
-            _pagingController.appendLastPage(pokemonList);
-          } else {
-            _pagingController.appendPage(pokemonList, offset + _pageSize);
-          }
-        } else {
-          // Muestra un mensaje de error si la solicitud de la API falla.
-          _pagingController.error = "Error fetching data";
-        }
+        _pagingController.appendPage(pokemonConverted, pageKey + 1);
       }
     } catch (error) {
-      // Maneja errores generales y muestra mensajes de error.
       _pagingController.error = error;
       showErrorMessage(error.toString());
     }
   }
-
-
 
   void showErrorMessage(String message) {
     ScaffoldMessenger.of(context as BuildContext).showSnackBar(SnackBar(
@@ -408,11 +369,11 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-  // Carga la lista de Pokémon favoritos del almacenamiento local.
   Future<void> loadFavoritePokemons() async {
     final favoriteList = await PokeDatabase.instance.getFavoritePokemons();
     setState(() {
-      favoritePokemons = Set<int>.from(favoriteList.map((pokemon) => pokemon.id));
+      favoritePokemons =
+          Set<int>.from(favoriteList.map((pokemon) => pokemon.id));
     });
   }
 }
@@ -421,7 +382,37 @@ Future<bool> agregarFavoritePokemon(int pokemonId) async {
   return await PokeDatabase.instance.toggleFavoritePokemon(pokemonId);
 }
 
-Future<bool> obtenerEstadoFavorito(int pokemonId) async {
-  bool Favorito = await PokeDatabase.instance.isFavoritePokemon(pokemonId);
-  return Favorito;
+Future<Pokemon> fetchPokemonDetailsData(String pokemonName) async {
+  try {
+    var pokemonUrl = "https://pokeapi.co/api/v2/pokemon/$pokemonName";
+    var response = await http.get(Uri.parse(pokemonUrl));
+    var data = json.decode(response.body);
+
+    List<Ability> abilitiesList = [];
+
+    for (var ability in data['abilities']) {
+      var abilitiesUrl = ability['ability']['url'];
+      var abilitiesResponse = await http.get(Uri.parse(abilitiesUrl));
+      var abilitiesData = json.decode(abilitiesResponse.body);
+
+      // Verificación de la descripción en inglés
+      var englishDescription = abilitiesData['effect_entries'].firstWhere(
+          (entry) => entry['language']['name'] == 'en',
+          orElse: () => null);
+
+      var abilitiesName = abilitiesData['name'];
+      var abilitiesDescription = englishDescription != null
+          ? englishDescription['effect']
+          : "Descripción no disponible en inglés";
+
+      abilitiesList
+          .add(Ability(name: abilitiesName, description: abilitiesDescription));
+    }
+    Pokemon pokemon = Pokemon.fromJson(data, abilitiesList);
+    return pokemon;
+  } catch (e, stackTrace) {
+    print("Error in fetchPokemonDetailsData: $e");
+    print(stackTrace);
+    throw e;
+  }
 }

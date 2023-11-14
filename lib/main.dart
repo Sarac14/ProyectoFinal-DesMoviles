@@ -5,10 +5,10 @@ import 'package:flutter/widgets.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  //Esta funcion se encarga de cargar los datos de la API en la base de datos
+  //await PokeDatabase.instance.insertPokemonsFromApi();
 
-  await PokeDatabase.instance.insertPokemonsFromApi();
-
-
+  await PokeDatabase.instance.printAllPokemons();
   runApp(MyApp());
 }
 

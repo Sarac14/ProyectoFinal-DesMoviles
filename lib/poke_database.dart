@@ -4,6 +4,8 @@ import 'package:path/path.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import 'Pokemon.dart';
+
 class PokeDatabase {
   static final PokeDatabase instance = PokeDatabase._();
 
@@ -23,14 +25,19 @@ class PokeDatabase {
       path,
       onCreate: (db, version) {
         db.execute(
-          'CREATE TABLE IF NOT EXISTS pokemon(id INTEGER PRIMARY KEY, name TEXT, url TEXT)',
+          'CREATE TABLE IF NOT EXISTS pokemon(id INTEGER PRIMARY KEY, name TEXT, url TEXT, type TEXT, image TEXT)',
         );
         db.execute(
           'CREATE TABLE IF NOT EXISTS favorite_pokemon(id INTEGER PRIMARY KEY, pokemon_id INTEGER, FOREIGN KEY(pokemon_id) REFERENCES pokemon(id) ON DELETE CASCADE)',
         );
       },
-      version: 2,
+      version: 1,
     );
+  }
+
+  void getDatabaseLocation() async {
+    var databasesPath = await getDatabasesPath();
+    print("Ruta de la base de datos: $databasesPath");
   }
 
   // Inserta un Pokémon en la base de datos.
@@ -43,8 +50,99 @@ class PokeDatabase {
     );
   }
 
-  Future<void> insertPokemonsFromApi() async {
+  Future<void> deleteAllPokemon() async {
+    final db = await instance.database;
+    await db.delete('pokemon');
+  }
+
+  Future<List<PokemonDB>> getPokemonsWithLimitAndOffset(
+      int limit, int offset) async {
+    final db = await database;
+    List<Map<String, dynamic>> results = await db.rawQuery(
+      'SELECT * FROM pokemon LIMIT ? OFFSET ?',
+      [limit, offset],
+    );
+
+    List<PokemonDB> pokemons = [];
+
+    for (var result in results) {
+      PokemonDB pokemon = PokemonDB(
+        id: result['id'] as int,
+        name: result['name'] as String,
+        url: result['url'] as String,
+        type: result['type'] as String,
+        image: result['image'] as String,
+      );
+      pokemons.add(pokemon);
+    }
+    return pokemons;
+  }
+
+  Future<void> checkAndAddMissingPokemon() async {
     var url = Uri.parse('https://pokeapi.co/api/v2/pokemon/?limit=1300');
+    var response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+      List results = data['results'];
+
+      for (var result in results) {
+        var pokemonUrl = result['url'];
+        var pokemonResponse = await http.get(Uri.parse(pokemonUrl));
+        if (pokemonResponse.statusCode == 200) {
+          var pokemonData = jsonDecode(pokemonResponse.body);
+          var id = pokemonData['id'] as int;
+          var existingPokemon = await getPokemonById(id);
+          if (existingPokemon == null) {
+            var types = pokemonData['types'];
+            var typeName = types[0]['type']['name'] as String;
+            var imageUrl = pokemonData['sprites']['other']['official-artwork']
+                ['front_default'] as String;
+            if (imageUrl == null) {
+              imageUrl = pokemonData['sprites']['front_default'] as String;
+            }
+            print("id: $id");
+            PokemonDB pokemon = PokemonDB(
+              id: id,
+              name: result['name'],
+              url: result['url'],
+              type: typeName,
+              image: imageUrl,
+            );
+            await insertPokemon(pokemon);
+          }
+        } else {
+          print('Failed to load data for ${result['name']} from API');
+        }
+      }
+    } else {
+      print('Failed to load data from API');
+    }
+  }
+
+  Future<PokemonDB?> getPokemonById(int id) async {
+    final db = await database;
+    List<Map<String, dynamic>> results = await db.query(
+      'pokemon',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+
+    if (results.isEmpty) {
+      return null;
+    } else {
+      return PokemonDB(
+        id: results[0]['id'] as int,
+        name: results[0]['name'] as String,
+        url: results[0]['url'] as String,
+        type: results[0]['type'] as String,
+        image: results[0]['image'] as String,
+      );
+    }
+  }
+
+  Future<void> insertPokemonsFromApi() async {
+    var url = Uri.parse('https://pokeapi.co/api/v2/pokemon/?limit=1294');
     var response = await http.get(url);
 
     if (response.statusCode == 200) {
@@ -53,12 +151,29 @@ class PokeDatabase {
 
       // Insertar los datos en la base de datos
       for (var result in results) {
-        PokemonDB pokemon = PokemonDB(
-          id: results.indexOf(result) + 1,
-          name: result['name'],
-          url: result['url'],
-        );
-        await insertPokemon(pokemon);
+        var pokemonUrl = result['url'];
+        var pokemonResponse = await http.get(Uri.parse(pokemonUrl));
+        if (pokemonResponse.statusCode == 200) {
+          var pokemonData = jsonDecode(pokemonResponse.body);
+          var types = pokemonData['types'];
+          var typeName = types[0]['type']['name'];
+          var imageUrl = pokemonData['sprites']['other']['official-artwork']
+              ['front_default'] as String?;
+          if (imageUrl == null) {
+            imageUrl = pokemonData['sprites']['front_default'] as String?;
+          }
+
+          PokemonDB pokemon = PokemonDB(
+            id: results.indexOf(result) + 1,
+            name: result['name'],
+            url: result['url'],
+            type: typeName,
+            image: imageUrl ?? '',
+          );
+          await insertPokemon(pokemon);
+        } else {
+          print('Failed to load data for ${result['name']} from API');
+        }
       }
     } else {
       print('Failed to load data from API');
@@ -118,39 +233,6 @@ class PokeDatabase {
     }
   }
 
-  /*Future<void> insertFavoritePokemon(int pokemonId) async {
-    final db = await database;
-    try {
-      await db.transaction((txn) async {
-        await txn.rawInsert(
-          'INSERT OR REPLACE INTO favorite_pokemon(pokemon_id) VALUES(?)',
-          [pokemonId],
-        );
-      });
-    } catch (e) {
-      print('Error occurred: $e');
-    }
-  }*/
-
-  Future<int> deleteFavoritePokemon(int id) async {
-    final db = await database;
-    return await db.delete(
-      'favorite_pokemon',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
-  }
-
-  Future<bool> checkIfFavorite(int pokemonId) async {
-    final db = await database;
-    final List<Map<String, dynamic>> favorites = await db.query(
-      'favorite_pokemon',
-      where: 'pokemon_id = ?',
-      whereArgs: [pokemonId],
-    );
-    return favorites.isNotEmpty;
-  }
-
   //Imprime todos los pokemones guardados en la base de datos en la consola
   Future<void> printAllPokemons() async {
     final db = await database;
@@ -161,7 +243,7 @@ class PokeDatabase {
     } else {
       pokemons.forEach((pokemon) {
         print(
-            'Pokemon - id: ${pokemon['id']}, name: ${pokemon['name']}, url: ${pokemon['url']}');
+            'Pokemon - id: ${pokemon['id']}, name: ${pokemon['name']}, url: ${pokemon['url']}, type: ${pokemon['type']}, image: ${pokemon['image']}');
       });
     }
   }
@@ -169,7 +251,7 @@ class PokeDatabase {
   Future<void> printAllFavoritePokemons() async {
     final db = await database;
     final List<Map<String, dynamic>> favoritePokemons =
-    await db.query('favorite_pokemon');
+        await db.query('favorite_pokemon');
 
     if (favoritePokemons.isEmpty) {
       print('No favorite pokemons found in the database.');
@@ -194,13 +276,14 @@ class PokeDatabase {
     for (var map in maps) {
       final pokemonId = map['pokemon_id'];
       final pokemonMap =
-      await db.query('pokemon', where: 'id = ?', whereArgs: [pokemonId]);
+          await db.query('pokemon', where: 'id = ?', whereArgs: [pokemonId]);
       if (pokemonMap.isNotEmpty) {
         final pokemon = PokemonDB(
-          id: pokemonMap[0]['id'] as int,
-          name: pokemonMap[0]['name'] as String,
-          url: pokemonMap[0]['url'] as String,
-        );
+            id: pokemonMap[0]['id'] as int,
+            name: pokemonMap[0]['name'] as String,
+            url: pokemonMap[0]['url'] as String,
+            type: pokemonMap[0]['type'] as String,
+            image: pokemonMap[0]['image'] as String);
         favoritePokemons.add(pokemon);
       }
     }
@@ -219,8 +302,8 @@ class PokeDatabase {
 
     for (var map in maps) {
       final pokemonId = map['pokemon_id'];
-      final pokemonMap = await db.query(
-          'pokemon', where: 'id = ?', whereArgs: [pokemonId]);
+      final pokemonMap =
+          await db.query('pokemon', where: 'id = ?', whereArgs: [pokemonId]);
       if (pokemonMap.isNotEmpty) {
         final url = pokemonMap[0]['url'] as String;
         favoritePokemonUrls.add(url);
@@ -228,20 +311,30 @@ class PokeDatabase {
     }
     return favoritePokemonUrls;
   }
-
 }
+
 class PokemonDB {
   final int id;
   final String name;
   final String url;
+  final String type;
+  final String image;
 
-  PokemonDB({required this.id, required this.name, required this.url});
+  PokemonDB({
+    required this.id,
+    required this.name,
+    required this.url,
+    required this.type,
+    required this.image,
+  });
 
   Map<String, dynamic> toMap() {
     return {
       'id': id,
       'name': name,
       'url': url,
+      'type': type,
+      'image': image,
     };
   }
 }
