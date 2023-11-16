@@ -266,18 +266,24 @@ class _DetailsScreenState extends State<DetailsScreen> {
         );
       case 4: // HABILIDADES
         return Container(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: widget.pokemon.getAbilities().map((ability) {
-              return AbilityCard(
-                color: widget.color,
-                abilityName: ability.name,
-                abilityDescription: ability.description,
-              );
-            }).toList(),
+          height: MediaQuery.of(context).size.height * 0.4, // Establecer una altura máxima
+          child: SingleChildScrollView(
+            child: Container(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: widget.pokemon.getAbilities().map((ability) {
+                  return AbilityCard(
+                    color: widget.color,
+                    abilityName: ability.name,
+                    abilityDescription: ability.description,
+                  );
+                }).toList(),
+              ),
+            ),
           ),
         );
+
       default:
         return Container();
     }
@@ -306,9 +312,12 @@ class _AbilityCardState extends State<AbilityCard> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6.0),
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Card(
         elevation: 4,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10.0),
+        ),
         child: GestureDetector(
           onTap: () {
             setState(() {
@@ -316,25 +325,32 @@ class _AbilityCardState extends State<AbilityCard> {
             });
           },
           child: Container(
-            color: widget.color,
+            decoration: BoxDecoration(
+              color: widget.color,
+              borderRadius: BorderRadius.circular(10.0),
+            ),
             padding: EdgeInsets.all(8.0),
             child: Column(
               children: [
                 Text(
                   widget.abilityName,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
                   textAlign: TextAlign.center,
                 ),
-                if (isExpanded) SizedBox(height: 8),
                 if (isExpanded)
-                  Text(
-                    widget.abilityDescription,
-                    style: TextStyle(fontSize: 16),
-                    textAlign: TextAlign.center,
+                  Container(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: SingleChildScrollView(
+                      child: Text(
+                        widget.abilityDescription,
+                        style: const TextStyle(fontSize: 16),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
                   ),
               ],
             ),

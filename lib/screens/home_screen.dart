@@ -87,14 +87,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 mainAxisSize: MainAxisSize.max,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // Icono de lupa en lugar del texto "Search"
                   Icon(
                     Icons.search,
                     size: 30,
                     color: Colors.black,
                   ),
-                  // Resto del código...
-                  // ... (el resto del código relacionado con la barra de búsqueda)
                 ],
               ),
             ),
@@ -115,7 +112,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 return InkWell(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
-                        vertical: 8.0, horizontal: 12),
+                        vertical: 5, horizontal: 5),
                     child: Container(
                       decoration: BoxDecoration(
                         color: getColorForType(pokemon.types),

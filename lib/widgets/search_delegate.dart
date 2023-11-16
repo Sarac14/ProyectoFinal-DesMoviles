@@ -73,7 +73,7 @@ class SearchPokemonDelegate extends SearchDelegate<PokemonCard> {
                   });
                 },
                 child: Padding(
-                  padding: const EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.all(2),
                   child: Card(
                     color: cardColor,
                     shape: RoundedRectangleBorder(
@@ -128,8 +128,8 @@ class SearchPokemonDelegate extends SearchDelegate<PokemonCard> {
                               color: Colors.black26,
                             ),
                             child: Padding(
-                              padding: const EdgeInsets.only(
-                                  left: 8.0, right: 8.0, top: 4, bottom: 4),
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 5, horizontal: 5),
                               child: Text(
                                 pokemon.types.first,
                                 style: const TextStyle(
