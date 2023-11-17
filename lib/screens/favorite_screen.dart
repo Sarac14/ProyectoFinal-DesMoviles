@@ -7,6 +7,7 @@ import 'package:path/path.dart';
 import 'package:pokedex_proyecto_final/Entities/Pokemon.dart';
 import 'package:http/http.dart' as http;
 import '../database/poke_database.dart';
+import '../widgets/animation.dart';
 import 'details_screen.dart';
 import 'home_screen.dart';
 
@@ -52,19 +53,11 @@ class _FavoritePokemonScreenState extends State<FavoritePokemonScreen> {
                 Color cardColor = getColorForType(pokemon.types);
                 return InkWell(
                   onTap: () {
-                    pokemonFetchData(pokemon.name).then((pokemonDetails) {
-                      String name = pokemonDetails.name;
-                      print("Este es el POKEMON: $name");
-                      Navigator.push(
+                    Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => DetailsScreen(
-                            pokemonDetails,
-                            getColorForType(pokemon.types),
-                          ),
-                        ),
-                      );
-                    });
+                            builder: (_) => GifViewer(pokemonCard: pokemon,
+                                color: getColorForType(pokemon.types))));
                   },
                   child: Card(
                     color: cardColor,

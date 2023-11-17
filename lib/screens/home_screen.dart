@@ -7,6 +7,7 @@ import 'package:path/path.dart';
 import 'package:pokedex_proyecto_final/screens/details_screen.dart';
 import '../Entities/Pokemon.dart';
 import '../database/poke_database.dart';
+import '../widgets/animation.dart';
 import '../widgets/search_delegate.dart';
 import 'favorite_screen.dart';
 
@@ -182,8 +183,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             child: IconButton(
                               // Verificar si el Pokémon actual es un favorito para cambiar el ícono.
                               icon: favoritePokemons.contains(pokemon.id)
-                                  ? Icon(Icons.favorite, color: Colors.red)
-                                  : Icon(Icons.favorite_border),
+                                  ? const Icon(Icons.favorite, color: Colors.red)
+                                  : const Icon(Icons.favorite_border),
                               onPressed: () {
                                 setState(() {
                                   // Verificar si el Pokémon actual es un favorito para cambiar el ícono.
@@ -223,13 +224,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   onTap: () {
-                    pokemonFetchData(pokemon.name).then((pokemonDetails) {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (_) => DetailsScreen(pokemonDetails,
-                                  getColorForType(pokemonDetails.types))));
-                    });
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => GifViewer(pokemonCard: pokemon,
+                                color: getColorForType(pokemon.types))));
                   },
                 );
               }),
@@ -247,8 +246,6 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> fetchPokemonData([int pageKey = 0]) async {
     try {
       final offset = pageKey * _pageSize;
-
-      await Future.delayed(Duration(seconds: 2));
 
       final pokemonList = await PokeDatabase.instance
           .getPokemonsWithLimitAndOffset(_pageSize, offset);
