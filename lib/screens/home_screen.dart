@@ -7,6 +7,7 @@ import 'package:path/path.dart';
 import 'package:pokedex_proyecto_final/screens/details_screen.dart';
 import '../Entities/Pokemon.dart';
 import '../database/poke_database.dart';
+import '../Entities/Stats.dart';
 import '../widgets/animation.dart';
 import '../widgets/search_delegate.dart';
 import 'favorite_screen.dart';
@@ -300,12 +301,13 @@ Future<bool> agregarFavoritePokemon(int pokemonId) async {
 
 Future<Pokemon> fetchPokemonDetailsData(String pokemonName) async {
   try {
+    // Obtener los detalles básicos del Pokémon
     var pokemonUrl = "https://pokeapi.co/api/v2/pokemon/$pokemonName";
     var response = await http.get(Uri.parse(pokemonUrl));
     var data = json.decode(response.body);
 
+    // Obtener la lista de habilidades
     List<Ability> abilitiesList = [];
-
     for (var ability in data['abilities']) {
       var abilitiesUrl = ability['ability']['url'];
       var abilitiesResponse = await http.get(Uri.parse(abilitiesUrl));
@@ -313,18 +315,47 @@ Future<Pokemon> fetchPokemonDetailsData(String pokemonName) async {
 
       // Verificación de la descripción en inglés
       var englishDescription = abilitiesData['effect_entries'].firstWhere(
-          (entry) => entry['language']['name'] == 'en',
-          orElse: () => null);
+            (entry) => entry['language']['name'] == 'en',
+        orElse: () => null,
+      );
 
       var abilitiesName = abilitiesData['name'];
       var abilitiesDescription = englishDescription != null
           ? englishDescription['effect']
           : "Descripción no disponible en inglés";
 
-      abilitiesList
-          .add(Ability(name: abilitiesName, description: abilitiesDescription));
+      abilitiesList.add(Ability(name: abilitiesName, description: abilitiesDescription));
     }
-    Pokemon pokemon = Pokemon.fromJson(data, abilitiesList);
+
+    // Obtener la URL de la especie
+    var speciesUrl = data['species']['url'];
+    var speciesResponse = await http.get(Uri.parse(speciesUrl));
+    var speciesData = json.decode(speciesResponse.body);
+
+    // Obtener la categoría del Pokémon
+    var category = speciesData['genera'].firstWhere(
+          (entry) => entry['language']['name'] == 'en',
+      orElse: () => null,
+    )['genus'];
+
+    // Obtener la descripción
+    var description = speciesData["flavor_text_entries"].firstWhere(
+          (entry) => entry['language']['name'] == 'en',
+      orElse: () => null,
+    )["flavor_text"];
+
+    // Obtener las estadísticas base
+    var statsData = data['stats'];
+    var stats = Stats(
+      baseHp: statsData[0]['base_stat'],
+      baseAttack: statsData[1]['base_stat'],
+      baseDefense: statsData[2]['base_stat'],
+      baseSpecialAttack: statsData[3]['base_stat'],
+      baseSpecialDefense: statsData[4]['base_stat'],
+      baseSpeed: statsData[5]['base_stat'],
+    );
+
+    Pokemon pokemon = Pokemon.fromJson(data, abilitiesList, category, description, stats);
     return pokemon;
   } catch (e, stackTrace) {
     print("Error in fetchPokemonDetailsData: $e");
@@ -332,6 +363,9 @@ Future<Pokemon> fetchPokemonDetailsData(String pokemonName) async {
     throw e;
   }
 }
+
+
+
 
 Color getColorForType(List<String> types) {
   if (types.contains('grass')) {

@@ -1,4 +1,5 @@
 import '../database/poke_database.dart';
+import 'Stats.dart';
 
 class Pokemon {
   final int id;
@@ -8,6 +9,11 @@ class Pokemon {
   final int height;
   final int weight;
   late final List<Ability> abilities;
+  final String category;
+  final String description;
+  final Stats stats;
+
+
 
   Pokemon({
     required this.id,
@@ -17,6 +23,10 @@ class Pokemon {
     required this.height,
     required this.weight,
     required this.abilities,
+    required this.category,
+    required this.description,
+    required this.stats,
+
   });
 
   void setAbilities(List<Ability> newAbilities) {
@@ -27,22 +37,20 @@ class Pokemon {
     return abilities;
   }
 
-  factory Pokemon.fromJson(Map<String, dynamic> json, List<Ability> listAbilities) {var typeList = (json['types'] as List)
-      .map((typeData) {
-    if (typeData is Map<String, dynamic>) {
-      // Algunas veces, el campo 'type' puede ser un mapa.
-      return typeData['type']['name'] as String;
-    } else if (typeData is String) {
-      // Otras veces, el campo 'type' puede ser directamente una cadena.
-      print("NOT NULL");
-      return typeData;
-    } else {
-      // En caso de que el formato no sea el esperado, puedes manejarlo de alguna manera.
-      print("NULL");
-      return 'Tipo Desconocido';
-    }
-  })
-      .toList();
+  factory Pokemon.fromJson(Map<String, dynamic> json, List<Ability> listAbilities, String category, String description, Stats stats) {
+    var typeList = (json['types'] as List)
+        .map((typeData) {
+      if (typeData is Map<String, dynamic>) {
+        return typeData['type']['name'] as String;
+      } else if (typeData is String) {
+        return typeData;
+      } else {
+        return 'Tipo Desconocido';
+      }
+    }).toList();
+
+    var stats = Stats.fromJson(json['stats']);
+
 
     return Pokemon(
       id: json['id'] as int,
@@ -52,6 +60,10 @@ class Pokemon {
       height: (json['height']) as int,
       weight: (json['weight']) as int,
       abilities: listAbilities,
+      category: category,
+      description: description,
+      stats: stats,
+
     );
   }
 }
@@ -74,7 +86,6 @@ class Ability {
   }
 }
 
-
 class PokemonCard {
   final int id;
   final String name;
@@ -94,3 +105,4 @@ class PokemonCard {
         imageUrl = pokemonDB.image,
         types = [pokemonDB.type];
 }
+

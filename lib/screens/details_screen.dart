@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../Entities/Pokemon.dart';
+import '../widgets/StatsChart.dart';
 
 class DetailsScreen extends StatefulWidget {
   final Pokemon pokemon;
@@ -31,6 +32,19 @@ class _DetailsScreenState extends State<DetailsScreen> {
       body: Stack(
         alignment: Alignment.center,
         children: [
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  widget.color,
+                 Colors.white54,
+                 //widget.color.withOpacity(0.5),
+                  Colors.white24,
+                 // widget.color,
+                ],
+              ),
+            ),
+          ),
           Positioned(
             top: 70,
             left: 1,
@@ -44,15 +58,38 @@ class _DetailsScreenState extends State<DetailsScreen> {
                   Navigator.pop(context);
                 }),
           ),
-          const Positioned(
+          Positioned(
             top: 75,
             left: 50,
             child: Text(
-              "Pokedex",
-              style: TextStyle(
+              //"Pokedex",
+              widget.pokemon.name,
+              style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
                   fontSize: 25),
+            ),
+          ),
+          Positioned(
+            top: 113,
+            left: 60,
+            child: Text(
+              //"Pokedex",
+              '#${widget.pokemon.id.toString()}',
+              style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20),
+            ),
+          ),
+          Positioned(
+            top: 75,
+            right: 15,
+            child: IconButton(
+              icon: const Icon(Icons.favorite_border, color: Colors.white),
+              onPressed: () {
+               // _openFavoritePokemonScreen(context);
+              },
             ),
           ),
           Positioned(
@@ -67,11 +104,11 @@ class _DetailsScreenState extends State<DetailsScreen> {
             bottom: 0,
             child: Container(
               width: width,
-              height: height * 0.6,
+              height: height * 0.65,
               decoration: const BoxDecoration(
                 borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(20),
-                  topRight: Radius.circular(20),
+                  topLeft: Radius.circular(40),
+                  topRight: Radius.circular(40),
                 ),
                 color: Colors.white,
               ),
@@ -81,10 +118,9 @@ class _DetailsScreenState extends State<DetailsScreen> {
                   Row(
                     children: [
                       buildSectionButton(0, "ABOUT"),
-                      buildSectionButton(1, "STATS"),
-                      buildSectionButton(2, "EVS"),
-                      buildSectionButton(3, "MOVES"),
-                      buildSectionButton(4, "SKILLS"),
+                      buildSectionButton(1, "EVS"),
+                      buildSectionButton(2, "MOVES"),
+                      buildSectionButton(3, "SKILLS"),
                     ],
                   ),
                   SizedBox(height: 20),
@@ -148,105 +184,127 @@ class _DetailsScreenState extends State<DetailsScreen> {
   Widget buildSectionContent(int sectionIndex) {
     switch (sectionIndex) {
       case 0: // ABOUT
-        return Container(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            children: [
-              Text(
-                '#${widget.pokemon.id}',
-                style: const TextStyle(
-                  color: Colors.black38,
-                  fontSize: 20,
-                ),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                widget.pokemon.name,
-                style: const TextStyle(
-                    color: Colors.black,
-                    fontSize: 25,
-                    fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: widget.pokemon.types.map((type) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(15)),
-                        color: widget.color.withOpacity(0.8),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 4.0),
-                      child: Text(
-                        type,
-                        style:
-                            const TextStyle(color: Colors.white, fontSize: 18),
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: 25),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+        String category = widget.pokemon.category?.split(' ')[0] ?? '';
+        String descriptionWithoutNewlines = widget.pokemon.description.replaceAll('\n', ' ');
+        return Expanded(
+          child: SingleChildScrollView(
+            child: Container(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Text(
-                    '${(widget.pokemon.weight / 10)} KG',
-                    style: const TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 20,
+                  Container(
+                    padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(15),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.5),
+                          spreadRadius: 2,
+                          blurRadius: 7,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            descriptionWithoutNewlines,
+                            style: const TextStyle(
+                              color: Colors.black,
+                              fontSize: 14,
+                            ),
+                            textAlign: TextAlign.center,
+                            softWrap: false,
+                            overflow: TextOverflow.clip,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(width: 50),
-                  Text(
-                    '${widget.pokemon.height / 10} M',
-                    style: const TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 20,
-                    ),
+                  const SizedBox(height: 30),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: widget.pokemon.types.map((type) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: const BorderRadius.all(Radius.circular(15)),
+                            color: widget.color.withOpacity(0.8),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 45,
+                            vertical: 4.0,
+                          ),
+                          child: Text(
+                            type,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
                   ),
+                  const SizedBox(height: 25),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _buildInfoColumn('Categoría', category),
+                      _buildSeparator(widget.color),
+                      _buildInfoColumn('Altura', '${widget.pokemon.height / 10} M'),
+                      _buildSeparator(widget.color),
+                      _buildInfoColumn('Peso', '${widget.pokemon.weight / 10} KG'),
+                    ],
+                  ),
+                  const SizedBox(height: 50),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        child: Divider(
+                          color: widget.color,
+                          thickness: 2,
+                          indent: 40,
+                        ),
+                      ),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 10),
+                        child: Text(
+                          'Estadísticas',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: Divider(
+                          color: widget.color,
+                          thickness: 2,
+                          endIndent: 40,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  StatsChart(stats: widget.pokemon.stats),
                 ],
               ),
-              const SizedBox(height: 10),
-              const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'Peso',
-                    style: TextStyle(
-                      color: Colors.black38,
-                      fontSize: 14,
-                    ),
-                  ),
-                  SizedBox(width: 75),
-                  Text(
-                    'Altura',
-                    style: TextStyle(
-                      color: Colors.black38,
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
-              ),
-            ],
+            ),
           ),
         );
-      case 1: // STATS
-        return Container(
-          padding: const EdgeInsets.all(20.0),
-          child: const Column(
-            children: [
-              // Aqui van las estadisticas
-            ],
-          ),
-        );
-      case 2: // EVOLUTIONS
+
+
+
+
+      case 1: // EVOLUTIONS
         return Container(
           padding: const EdgeInsets.all(20.0),
           child: Column(
@@ -255,7 +313,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
             ],
           ),
         );
-      case 3: // MOVES
+      case 2: // MOVES
         return Container(
           padding: const EdgeInsets.all(20.0),
           child: Column(
@@ -264,9 +322,9 @@ class _DetailsScreenState extends State<DetailsScreen> {
             ],
           ),
         );
-      case 4: // HABILIDADES
+      case 3: // HABILIDADES
         return Container(
-          height: MediaQuery.of(context).size.height * 0.4, // Establecer una altura máxima
+          height: MediaQuery.of(context).size.height * 0.4,
           child: SingleChildScrollView(
             child: Container(
               padding: const EdgeInsets.all(20.0),
@@ -304,6 +362,39 @@ class AbilityCard extends StatefulWidget {
 
   @override
   _AbilityCardState createState() => _AbilityCardState();
+}
+
+// Método auxiliar para construir las columnas de información
+Widget _buildInfoColumn(String title, String value) {
+  return Column(
+    children: [
+      Text(
+        value,
+        style: const TextStyle(
+          color: Colors.black,
+          fontWeight: FontWeight.bold,
+          fontSize: 20,
+        ),
+      ),
+      const SizedBox(height: 5),
+      Text(
+        title,
+        style: const TextStyle(
+          color: Colors.black38,
+          fontSize: 14,
+        ),
+      ),
+    ],
+  );
+}
+
+Widget _buildSeparator(Color color) {
+  return Container(
+    margin: const EdgeInsets.symmetric(horizontal: 25),
+    height: 35,
+    width: 1.5,
+    color: color, // Color del Pokémon
+  );
 }
 
 class _AbilityCardState extends State<AbilityCard> {
