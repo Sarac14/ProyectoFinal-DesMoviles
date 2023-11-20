@@ -208,23 +208,23 @@ class _DetailsScreenState extends State<DetailsScreen> {
                         ),
                       ],
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            descriptionWithoutNewlines,
-                            style: const TextStyle(
-                              color: Colors.black,
-                              fontSize: 14,
-                            ),
-                            textAlign: TextAlign.center,
-                            softWrap: false,
-                            overflow: TextOverflow.clip,
+                    child: Wrap(
+                      alignment: WrapAlignment.center,
+                        children: [
+                        Text(
+                          descriptionWithoutNewlines,
+                          style: const TextStyle(
+                            color: Colors.black,
+                            fontSize: 14,
                           ),
+                          softWrap: true,
+                          overflow: TextOverflow.clip,
+                          textAlign: TextAlign.center,
+
                         ),
                       ],
                     ),
+
                   ),
                   const SizedBox(height: 30),
                   Row(
@@ -260,7 +260,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                       _buildSeparator(widget.color),
                       _buildInfoColumn('Height', '${widget.pokemon.height / 10} M'),
                       _buildSeparator(widget.color),
-                      _buildInfoColumn('weight', '${widget.pokemon.weight / 10} KG'),
+                      _buildInfoColumn('Weight', '${widget.pokemon.weight / 10} KG'),
                     ],
                   ),
                   const SizedBox(height: 50),
