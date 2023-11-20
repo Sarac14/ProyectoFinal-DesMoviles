@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../Entities/Pokemon.dart';
 import '../widgets/StatsChart.dart';
+import 'home_screen.dart';
 
 class DetailsScreen extends StatefulWidget {
   final Pokemon pokemon;
@@ -63,7 +64,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
             left: 50,
             child: Text(
               //"Pokedex",
-              widget.pokemon.name,
+              capitalize(widget.pokemon.name),
               style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -228,9 +229,9 @@ class _DetailsScreenState extends State<DetailsScreen> {
                   const SizedBox(height: 30),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: widget.pokemon.types.map((type) {
+                    children: capitalizeList(widget.pokemon.types).map((type) {
                       return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
                         child: Container(
                           decoration: BoxDecoration(
                             borderRadius: const BorderRadius.all(Radius.circular(15)),
@@ -255,11 +256,11 @@ class _DetailsScreenState extends State<DetailsScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      _buildInfoColumn('Categoría', category),
+                      _buildInfoColumn('Category', category),
                       _buildSeparator(widget.color),
-                      _buildInfoColumn('Altura', '${widget.pokemon.height / 10} M'),
+                      _buildInfoColumn('Height', '${widget.pokemon.height / 10} M'),
                       _buildSeparator(widget.color),
-                      _buildInfoColumn('Peso', '${widget.pokemon.weight / 10} KG'),
+                      _buildInfoColumn('weight', '${widget.pokemon.weight / 10} KG'),
                     ],
                   ),
                   const SizedBox(height: 50),
@@ -276,7 +277,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                       const Padding(
                         padding: EdgeInsets.symmetric(horizontal: 10),
                         child: Text(
-                          'Estadísticas',
+                          'Statistics',
                           style: TextStyle(
                             color: Colors.black,
                             fontSize: 18,
@@ -333,7 +334,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                 children: widget.pokemon.getAbilities().map((ability) {
                   return AbilityCard(
                     color: widget.color,
-                    abilityName: ability.name,
+                    abilityName: capitalize(ability.name),
                     abilityDescription: ability.description,
                   );
                 }).toList(),

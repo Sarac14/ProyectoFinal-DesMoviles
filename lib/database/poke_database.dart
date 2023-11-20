@@ -79,6 +79,42 @@ class PokeDatabase {
     return pokemons;
   }
 
+  Future<List<String>> getAllPokemonTypes() async {
+    final db = await database;
+
+    final List<Map<String, dynamic>> types = await db.rawQuery('''
+    SELECT DISTINCT type FROM pokemon
+  ''');
+
+    final uniqueTypes = types.map((type) => type['type'].toString()).toList();
+
+    // Agregar la opción "Todos" a la lista
+    uniqueTypes.insert(0, 'Todos');
+
+    return uniqueTypes;
+  }
+  Future<List<PokemonDB>> getPokemonsByTypeAndLimitAndOffset(String type, int limit, int offset) async {
+    final db = await database;
+    List<Map<String, dynamic>> results = await db.rawQuery(
+      'SELECT * FROM pokemon WHERE type = ? LIMIT ? OFFSET ?',
+      [type, limit, offset],
+    );
+
+    List<PokemonDB> pokemons = [];
+
+    for (var result in results) {
+      PokemonDB pokemon = PokemonDB(
+        id: result['id'] as int,
+        name: result['name'] as String,
+        url: result['url'] as String,
+        type: result['type'] as String,
+        image: result['image'] as String,
+      );
+      pokemons.add(pokemon);
+    }
+    return pokemons;
+  }
+
   Future<void> checkAndAddMissingPokemon() async {
     var url = Uri.parse('https://pokeapi.co/api/v2/pokemon/?limit=1300');
     var response = await http.get(url);
@@ -99,9 +135,7 @@ class PokeDatabase {
             var typeName = types[0]['type']['name'] as String;
             var imageUrl = pokemonData['sprites']['other']['official-artwork']
                 ['front_default'] as String;
-            if (imageUrl == null) {
-              imageUrl = pokemonData['sprites']['front_default'] as String;
-            }
+            imageUrl ??= pokemonData['sprites']['front_default'] as String;
             print("id: $id");
             PokemonDB pokemon = PokemonDB(
               id: id,
@@ -293,26 +327,55 @@ class PokeDatabase {
 
   Future<List<PokemonCard>> searchPokemons(String query) async {
     final db = await database;
-    List<Map<String, dynamic>> results = await db.rawQuery(
-      'SELECT * FROM pokemon WHERE name LIKE ?',
-      ['$query%'], // Agrega el '%' al final para buscar nombres que comienzan con la cadena.
-    );
 
-    List<PokemonCard> pokemons = [];
+    // Intenta convertir la consulta a un número (ID del Pokémon).
+    int? pokemonId = int.tryParse(query);
 
-    for (var result in results) {
-      PokemonDB pokemon = PokemonDB(
-        id: result['id'] as int,
-        name: result['name'] as String,
-        url: result['url'] as String,
-        type: result['type'] as String,
-        image: result['image'] as String,
+    if (pokemonId != null) {
+      // Si la conversión fue exitosa, busca el Pokémon por ID.
+      List<Map<String, dynamic>> results = await db.rawQuery(
+        'SELECT * FROM pokemon WHERE id = ?',
+        [pokemonId],
       );
-      PokemonCard pokemonCard = PokemonCard.fromPokemonDB(pokemon);
-      pokemons.add(pokemonCard);
+
+      List<PokemonCard> pokemons = [];
+
+      for (var result in results) {
+        PokemonDB pokemon = PokemonDB(
+          id: result['id'] as int,
+          name: result['name'] as String,
+          url: result['url'] as String,
+          type: result['type'] as String,
+          image: result['image'] as String,
+        );
+        PokemonCard pokemonCard = PokemonCard.fromPokemonDB(pokemon);
+        pokemons.add(pokemonCard);
+      }
+      return pokemons;
+    } else {
+      // Si la conversión falla, busca por nombre.
+      List<Map<String, dynamic>> results = await db.rawQuery(
+        'SELECT * FROM pokemon WHERE name LIKE ?',
+        ['$query%'],
+      );
+
+      List<PokemonCard> pokemons = [];
+
+      for (var result in results) {
+        PokemonDB pokemon = PokemonDB(
+          id: result['id'] as int,
+          name: result['name'] as String,
+          url: result['url'] as String,
+          type: result['type'] as String,
+          image: result['image'] as String,
+        );
+        PokemonCard pokemonCard = PokemonCard.fromPokemonDB(pokemon);
+        pokemons.add(pokemonCard);
+      }
+      return pokemons;
     }
-    return pokemons;
   }
+
 
   Future<List<String>> getFavoritePokemonUrls() async {
     final db = await database;

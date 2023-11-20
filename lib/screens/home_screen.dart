@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:path/path.dart';
-import 'package:pokedex_proyecto_final/screens/details_screen.dart';
 import '../Entities/Pokemon.dart';
 import '../database/poke_database.dart';
 import '../Entities/Stats.dart';
@@ -13,17 +12,20 @@ import '../widgets/search_delegate.dart';
 import 'favorite_screen.dart';
 
 class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  Set<int> favoritePokemons = Set<int>();
+  Set<int> favoritePokemons = <int>{};
   bool isFavorite = false;
   static const _pageSize = 20;
   final PagingController<int, PokemonCard> _pagingController =
       PagingController(firstPageKey: 0);
   final TextEditingController searchController = TextEditingController();
+  String? selectedType;
 
   void _openFavoritePokemonScreen(BuildContext context) {
     Navigator.push(
@@ -31,6 +33,62 @@ class _HomeScreenState extends State<HomeScreen> {
       MaterialPageRoute(builder: (context) => FavoritePokemonScreen()),
     );
   }
+
+  void _showFilterOptions(BuildContext context) async {
+    List<String> types = await PokeDatabase.instance.getAllPokemonTypes();
+
+    final currentContext = context; // Almacenar la referencia al contexto actual
+
+    // Crear un ScrollController
+    ScrollController scrollController = ScrollController();
+
+    final selectedTypeResult = await showDialog<String>(
+      context: currentContext, // Usar la referencia almacenada
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Selecciona un tipo'),
+          content: Container(
+            width: 200.0,
+            height: 400.0, // Ajusta el ancho del AlertDialog según tus necesidades
+            child: Center(
+              child: Scrollbar(
+                thumbVisibility: true, // Mostrar siempre la barra de desplazamiento
+                controller: scrollController,
+                child: ListView.builder(
+                  controller: scrollController, // Asignar el ScrollController al ListView
+                  shrinkWrap: true,
+                  itemCount: types.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    return InkWell(
+                      onTap: () {
+                        Navigator.of(context).pop(types[index]);
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                          capitalize(types[index]),
+                          style: TextStyle(fontSize: 16.0), // Ajusta el tamaño del texto aquí
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+
+    if (selectedTypeResult != null) {
+      setState(() {
+        selectedType = selectedTypeResult;
+        _pagingController.refresh();
+      });
+      print('Filtrar por: $selectedTypeResult');
+    }
+  }
+
 
   @override
   void initState() {
@@ -50,58 +108,82 @@ class _HomeScreenState extends State<HomeScreen> {
       body: Stack(
         children: [
           Positioned(
-            top: -50,
-            right: -50,
-            child: Image.asset(
-              'images/pokeball.png',
-              width: 200,
-              fit: BoxFit.fitHeight,
-            ),
-          ),
-          const Positioned(
-              top: 70,
-              left: 20,
-              child: Text(
-                "Pokedex",
-                style: TextStyle(
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black),
-              )),
-          Positioned(
-            top: 70,
-            right: 20,
-            child: IconButton(
-              icon: const Icon(Icons.favorite, color: Colors.redAccent),
-              onPressed: () {
-                _openFavoritePokemonScreen(context);
-              },
-            ),
-          ),
-          Positioned(
-            top: 80,
-            right: 80,
-            child: GestureDetector(
-              onTap: () {
-                showSearch(context: context, delegate: SearchPokemonDelegate());
-              },
-              child: const Row(
-                mainAxisSize: MainAxisSize.max,
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 680,
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              height: 150,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    blurRadius: 5,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.search,
-                    size: 30,
-                    color: Colors.black,
+                  const Text(
+                    "Pokedex",
+                    style: TextStyle(
+                      fontSize: 35,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.gamepad, color: Colors.blue),
+                        onPressed: () {
+                          // Lógica del botón de juego
+                        },
+                      ),
+                      const SizedBox(width: 40), // Espacio entre el icono de juego y el de filtro
+                      IconButton(
+                        icon: const Icon(Icons.filter_alt, color: Colors.green),
+                        onPressed: () {
+                          _showFilterOptions(context);
+                        },
+                      ),
+                      const SizedBox(width: 40), // Espacio entre el icono de filtro y el de corazon
+                      IconButton(
+                        icon: const Icon(Icons.favorite, color: Colors.redAccent),
+                        onPressed: () {
+                          _openFavoritePokemonScreen(context);
+                        },
+                      ),
+                      const SizedBox(width: 40), // Espacio entre el icono de corazon y el de lupa
+                      GestureDetector(
+                        onTap: () {
+                          showSearch(context: context, delegate: SearchPokemonDelegate());
+                        },
+                        child: const Icon(
+                          Icons.search,
+                          size: 30,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
           ),
           Positioned(
-            top: 150,
+            top: 188,
             bottom: 0,
             width: width,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 0),
             child: PagedGridView<int, PokemonCard>(
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
@@ -121,8 +203,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         borderRadius:
                             const BorderRadius.all(Radius.circular(20)),
                       ),
-                      //  color: Colors.green,
-                      // child: Stack(
                       child: Stack(
                         children: [
                           Positioned(
@@ -137,7 +217,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             top: 20,
                             left: 10,
                             child: Text(
-                              pokemon.name,
+                              capitalize(pokemon.name),
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 18,
@@ -170,7 +250,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 padding: const EdgeInsets.only(
                                     left: 8.0, right: 8.0, top: 4, bottom: 4),
                                 child: Text(
-                                  type.toString(),
+                                  capitalize(type.toString()),
                                   style: const TextStyle(
                                     color: Colors.white,
                                   ),
@@ -185,7 +265,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               // Verificar si el Pokémon actual es un favorito para cambiar el ícono.
                               icon: favoritePokemons.contains(pokemon.id)
                                   ? const Icon(Icons.favorite, color: Colors.red)
-                                  : const Icon(Icons.favorite_border),
+                                  : const Icon(Icons.favorite_border_rounded, color: Colors.white),
                               onPressed: () {
                                 setState(() {
                                   // Verificar si el Pokémon actual es un favorito para cambiar el ícono.
@@ -235,6 +315,7 @@ class _HomeScreenState extends State<HomeScreen> {
               }),
             ),
           ),
+          ),
         ],
       ),
     );
@@ -248,16 +329,23 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       final offset = pageKey * _pageSize;
 
-      final pokemonList = await PokeDatabase.instance
-          .getPokemonsWithLimitAndOffset(_pageSize, offset);
+      List<PokemonDB> pokemonList;
+
+      if (selectedType != null && selectedType != 'Todos' ) {
+        // Si se selecciona un tipo que no es "Todos", filtra por ese tipo
+        pokemonList = await PokeDatabase.instance.getPokemonsByTypeAndLimitAndOffset(selectedType!, _pageSize, offset);
+      } else {
+        // Si no hay tipo seleccionado o es "Todos", obtén todos los Pokémon
+        pokemonList = await PokeDatabase.instance.getPokemonsWithLimitAndOffset(_pageSize, offset);
+      }
 
       final pokemonConverted = pokemonList
           .map((pokemon) => PokemonCard(
-                id: pokemon.id,
-                name: pokemon.name,
-                imageUrl: pokemon.image,
-                types: [pokemon.type],
-              ))
+        id: pokemon.id,
+        name: pokemon.name,
+        imageUrl: pokemon.image,
+        types: [pokemon.type],
+      ))
           .toList();
 
       final isLastPage = pokemonList.length < _pageSize;
@@ -267,11 +355,16 @@ class _HomeScreenState extends State<HomeScreen> {
       } else {
         _pagingController.appendPage(pokemonConverted, pageKey + 1);
       }
+
+      final allPokemonTypes = await PokeDatabase.instance.getAllPokemonTypes();
+      print('Todos los tipos de Pokémon: $allPokemonTypes');
     } catch (error) {
       _pagingController.error = error;
       showErrorMessage(error.toString());
     }
   }
+
+
 
   void showErrorMessage(String message) {
     ScaffoldMessenger.of(context as BuildContext).showSnackBar(SnackBar(
@@ -362,6 +455,7 @@ Future<Pokemon> fetchPokemonDetailsData(String pokemonName) async {
     print(stackTrace);
     throw e;
   }
+
 }
 
 
@@ -395,4 +489,17 @@ Color getColorForType(List<String> types) {
   } else {
     return Colors.pink;
   }
+}
+
+String capitalize(String text) {
+  if (text == null || text.isEmpty) {
+    return text;
+  }
+  return text[0].toUpperCase() + text.substring(1);
+}
+List<String> capitalizeList(List<String> list) {
+  if (list == null || list.isEmpty) {
+    return list;
+  }
+  return list.map((text) => capitalize(text)).toList();
 }

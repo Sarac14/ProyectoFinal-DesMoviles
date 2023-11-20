@@ -45,7 +45,7 @@ class StatsChart extends StatelessWidget {
             ),
             LinearProgressIndicator(
               borderRadius: const BorderRadius.all(Radius.circular(20)),
-              value: value / 100,
+              value: value / 250,
               backgroundColor: color.withOpacity(0.2),
               valueColor: AlwaysStoppedAnimation<Color>(color),
             ),

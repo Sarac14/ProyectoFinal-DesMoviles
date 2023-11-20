@@ -47,6 +47,7 @@ dependencies:
   chewie: ^1.7.1
   flutter_launcher_icons: ^0.13.1
   flare_flutter: ^3.0.2
+  dropdown_button2: ^2.3.9
 
 dev_dependencies:
   flutter_test:
