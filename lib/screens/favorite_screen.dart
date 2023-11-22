@@ -78,7 +78,7 @@ class _FavoritePokemonScreenState extends State<FavoritePokemonScreen> {
                           top: 20,
                           left: 10,
                           child: Text(
-                            pokemon.name,
+                            capitalize(pokemon.name),
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 18,
@@ -111,7 +111,7 @@ class _FavoritePokemonScreenState extends State<FavoritePokemonScreen> {
                               padding: const EdgeInsets.only(
                                   left: 8.0, right: 8.0, top: 4, bottom: 4),
                               child: Text(
-                                pokemon.types.first,
+                                capitalize(pokemon.types.first),
                                 style: const TextStyle(
                                   color: Colors.white,
                                 ),
@@ -148,36 +148,6 @@ class _FavoritePokemonScreenState extends State<FavoritePokemonScreen> {
         },
       ),
     );
-  }
-
-  Color getColorForType(List<String> types) {
-    if (types.contains('grass')) {
-      return Colors.greenAccent;
-    } else if (types.contains('fire')) {
-      return Colors.redAccent;
-    } else if (types.contains('water')) {
-      return Colors.blue;
-    } else if (types.contains('poison')) {
-      return Colors.deepPurpleAccent;
-    } else if (types.contains('electric')) {
-      return Colors.amber;
-    } else if (types.contains('rock')) {
-      return Colors.grey;
-    } else if (types.contains('ground')) {
-      return Colors.brown;
-    } else if (types.contains('psychic')) {
-      return Colors.indigo;
-    } else if (types.contains('fighting')) {
-      return Colors.orange;
-    } else if (types.contains('bug')) {
-      return Colors.lightGreen;
-    } else if (types.contains('ghost')) {
-      return Colors.deepPurple;
-    } else if (types.contains('normal')) {
-      return Colors.grey;
-    } else {
-      return Colors.pink;
-    }
   }
 
   Future<void> loadFavoritePokemons() async {

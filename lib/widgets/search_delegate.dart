@@ -172,33 +172,3 @@ class SearchPokemonDelegate extends SearchDelegate<PokemonCard> {
     );
   }
 }
-
-Color getColorForType(List<String> types) {
-  if (types.contains('grass')) {
-    return Colors.greenAccent;
-  } else if (types.contains('fire')) {
-    return Colors.redAccent;
-  } else if (types.contains('water')) {
-    return Colors.blue;
-  } else if (types.contains('poison')) {
-    return Colors.deepPurpleAccent;
-  } else if (types.contains('electric')) {
-    return Colors.amber;
-  } else if (types.contains('rock')) {
-    return Colors.grey;
-  } else if (types.contains('ground')) {
-    return Colors.brown;
-  } else if (types.contains('psychic')) {
-    return Colors.indigo;
-  } else if (types.contains('fighting')) {
-    return Colors.orange;
-  } else if (types.contains('bug')) {
-    return Colors.lightGreen;
-  } else if (types.contains('ghost')) {
-    return Colors.deepPurple;
-  } else if (types.contains('normal')) {
-    return Colors.grey;
-  } else {
-    return Colors.pink;
-  }
-}

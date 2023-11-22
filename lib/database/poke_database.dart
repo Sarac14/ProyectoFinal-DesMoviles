@@ -89,7 +89,7 @@ class PokeDatabase {
     final uniqueTypes = types.map((type) => type['type'].toString()).toList();
 
     // Agregar la opción "Todos" a la lista
-    uniqueTypes.insert(0, 'Todos');
+    uniqueTypes.insert(0, 'all');
 
     return uniqueTypes;
   }

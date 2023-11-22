@@ -37,43 +37,57 @@ class _HomeScreenState extends State<HomeScreen> {
   void _showFilterOptions(BuildContext context) async {
     List<String> types = await PokeDatabase.instance.getAllPokemonTypes();
 
-    final currentContext = context; // Almacenar la referencia al contexto actual
-
-    // Crear un ScrollController
-    ScrollController scrollController = ScrollController();
-
     final selectedTypeResult = await showDialog<String>(
-      context: currentContext, // Usar la referencia almacenada
+      context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Selecciona un tipo'),
-          content: Container(
-            width: 200.0,
-            height: 400.0, // Ajusta el ancho del AlertDialog según tus necesidades
-            child: Center(
-              child: Scrollbar(
-                thumbVisibility: true, // Mostrar siempre la barra de desplazamiento
-                controller: scrollController,
-                child: ListView.builder(
-                  controller: scrollController, // Asignar el ScrollController al ListView
-                  shrinkWrap: true,
-                  itemCount: types.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    return InkWell(
-                      onTap: () {
-                        Navigator.of(context).pop(types[index]);
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(
-                          capitalize(types[index]),
-                          style: TextStyle(fontSize: 16.0), // Ajusta el tamaño del texto aquí
-                        ),
-                      ),
-                    );
-                  },
-                ),
+          title: const Text('Select a type'),
+          content: SizedBox(
+            width: 300.0,
+            height: 400.0,
+            child: GridView.builder(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2, // Dos columnas
+                crossAxisSpacing: 2.0, // Espaciado entre columnas
+                mainAxisSpacing: 2.0,
+                childAspectRatio: 1.4,// Espaciado entre filas
               ),
+              itemCount: types.length,
+              itemBuilder: (BuildContext context, int index) {
+                String type = types[index];
+                Color backgroundColor = getColorForType([type]);
+
+                return InkWell(
+                  onTap: () {
+                    Navigator.of(context).pop(type);
+                  },
+                  child: Card(
+                    elevation: 2.0,
+                    color: backgroundColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20.0), // Ajusta este valor para cambiar la circularidad de los bordes
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            capitalize(type),
+                            style: const TextStyle(fontSize: 16.0),
+                          ),
+                          const SizedBox(height: 8.0),
+                          Image.asset(
+                            'images/$type.png',
+                            width: 24.0,
+                            height: 24.0,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
           ),
         );
@@ -88,7 +102,6 @@ class _HomeScreenState extends State<HomeScreen> {
       print('Filtrar por: $selectedTypeResult');
     }
   }
-
 
   @override
   void initState() {
@@ -180,10 +193,8 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           Positioned(
             top: 188,
-            bottom: 0,
+            height: height-30,
             width: width,
-            child: Padding(
-              padding: const EdgeInsets.only(top: 0),
             child: PagedGridView<int, PokemonCard>(
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
@@ -315,7 +326,6 @@ class _HomeScreenState extends State<HomeScreen> {
               }),
             ),
           ),
-          ),
         ],
       ),
     );
@@ -331,7 +341,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       List<PokemonDB> pokemonList;
 
-      if (selectedType != null && selectedType != 'Todos' ) {
+      if (selectedType != null && selectedType != 'all' ) {
         // Si se selecciona un tipo que no es "Todos", filtra por ese tipo
         pokemonList = await PokeDatabase.instance.getPokemonsByTypeAndLimitAndOffset(selectedType!, _pageSize, offset);
       } else {
@@ -363,8 +373,6 @@ class _HomeScreenState extends State<HomeScreen> {
       showErrorMessage(error.toString());
     }
   }
-
-
 
   void showErrorMessage(String message) {
     ScaffoldMessenger.of(context as BuildContext).showSnackBar(SnackBar(
@@ -458,47 +466,57 @@ Future<Pokemon> fetchPokemonDetailsData(String pokemonName) async {
 
 }
 
-
-
-
 Color getColorForType(List<String> types) {
   if (types.contains('grass')) {
-    return Colors.greenAccent;
+    return Colors.green;
   } else if (types.contains('fire')) {
-    return Colors.redAccent;
+    return Colors.red.shade600;
   } else if (types.contains('water')) {
     return Colors.blue;
   } else if (types.contains('poison')) {
-    return Colors.deepPurpleAccent;
+    return Colors.deepPurple;
   } else if (types.contains('electric')) {
     return Colors.amber;
   } else if (types.contains('rock')) {
-    return Colors.grey;
+    return Colors.brown.shade400;
   } else if (types.contains('ground')) {
-    return Colors.brown;
-  } else if (types.contains('psychic')) {
-    return Colors.indigo;
-  } else if (types.contains('fighting')) {
     return Colors.orange;
+  } else if (types.contains('psychic')) {
+    return Colors.redAccent.shade100;
+  } else if (types.contains('fighting')) {
+    return Colors.pink;
   } else if (types.contains('bug')) {
     return Colors.lightGreen;
   } else if (types.contains('ghost')) {
-    return Colors.deepPurple;
+    return Colors.indigo.shade600;
   } else if (types.contains('normal')) {
     return Colors.grey;
-  } else {
+  }else if (types.contains('fairy')) {
+    return Colors.pink.shade200;
+  }else if (types.contains('ice')) {
+    return Colors.teal.shade300;
+  }else if (types.contains('dragon')) {
+    return Colors.blue.shade800;
+  }else if (types.contains('dark')) {
+    return Colors.grey.shade800;
+  }else if (types.contains('steel')) {
+    return Colors.blueGrey.shade400;
+  } else if (types.contains('flying')) {
+    return Colors.blue.shade100;
+  }
+  else {
     return Colors.pink;
   }
 }
 
 String capitalize(String text) {
-  if (text == null || text.isEmpty) {
+  if (text.isEmpty) {
     return text;
   }
   return text[0].toUpperCase() + text.substring(1);
 }
 List<String> capitalizeList(List<String> list) {
-  if (list == null || list.isEmpty) {
+  if (list.isEmpty) {
     return list;
   }
   return list.map((text) => capitalize(text)).toList();
