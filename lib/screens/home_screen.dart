@@ -7,6 +7,7 @@ import 'package:path/path.dart';
 import '../Entities/Pokemon.dart';
 import '../database/poke_database.dart';
 import '../Entities/Stats.dart';
+import '../Entities/Move.dart';
 import '../widgets/animation.dart';
 import '../widgets/search_delegate.dart';
 import 'favorite_screen.dart';
@@ -456,14 +457,48 @@ Future<Pokemon> fetchPokemonDetailsData(String pokemonName) async {
       baseSpeed: statsData[5]['base_stat'],
     );
 
-    Pokemon pokemon = Pokemon.fromJson(data, abilitiesList, category, description, stats);
+    // Obtener la lista de movimientos y sus detalles
+    var movesUrl = data['moves'];
+    List<Move> movesList = [];
+    int nMove = 0;
+
+    for (var moveData in movesUrl) {
+      var moveResponse = await http.get(Uri.parse(moveData['move']['url']));
+      var moveDetails = json.decode(moveResponse.body);
+
+      var moveName = moveDetails['name'];
+      var movePower = moveDetails['power'];
+      var movePP = moveDetails['pp'];
+      var moveAccuracy = moveDetails['accuracy'];
+      var moveType = moveDetails['type']['name'];
+      var moveDamageClass = moveDetails['damage_class']['name'];
+      var moveLearnMethod = data['moves'][nMove]['version_group_details'][0]['move_learn_method']['name'];
+      /*int level = 0;
+      if(moveLearnMethod == 'level-up'){
+        level = data['moves'][nMove]['version_group_details'][0]['move_learn_method']['level_learned_at'];
+      }*/
+
+      movesList.add(Move(
+        name: moveName,
+        power: movePower ?? -1,
+        pp: movePP ?? -1,
+        accuracy: moveAccuracy ?? -1,
+        type: moveType,
+        damageClass: moveDamageClass,
+        learnMethod: moveLearnMethod,
+       // level: level ?? -1,
+      ));
+
+      nMove = nMove + 1;
+    }
+
+    Pokemon pokemon = Pokemon.fromJson(data, abilitiesList, category, description, stats, movesList);
     return pokemon;
   } catch (e, stackTrace) {
     print("Error in fetchPokemonDetailsData: $e");
     print(stackTrace);
     throw e;
   }
-
 }
 
 Color getColorForType(List<String> types) {

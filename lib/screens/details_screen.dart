@@ -17,6 +17,7 @@ class DetailsScreen extends StatefulWidget {
 
 class _DetailsScreenState extends State<DetailsScreen> {
   int selectedSection = 0;
+  String selectedMethod = 'level-up';
 
   @override
   void initState() {
@@ -303,8 +304,6 @@ class _DetailsScreenState extends State<DetailsScreen> {
         );
 
 
-
-
       case 1: // EVOLUTIONS
         return Container(
           padding: const EdgeInsets.all(20.0),
@@ -314,15 +313,190 @@ class _DetailsScreenState extends State<DetailsScreen> {
             ],
           ),
         );
+
+
       case 2: // MOVES
-        return Container(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            children: [
-              // Aqui van los movimientos
-            ],
+        print(widget.pokemon.moves.where((move) => move.learnMethod == selectedMethod));
+        print(selectedMethod);
+        return Expanded(
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(30.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(15),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.5),
+                          spreadRadius: 2,
+                          blurRadius: 7,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 10),
+                        const Text(
+                          "Learning Methods",
+                          style: TextStyle(
+                            color: Colors.black38,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 5),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(20.0),
+                          child: SizedBox(
+                            height: 60.0,
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: 4,
+                              itemBuilder: (BuildContext context, int index) {
+                                String item = '';
+                                String selec = '';
+                                switch (index) {
+                                  case 0:
+                                    item = 'Level up';
+                                    selec = 'level-up';
+                                    break;
+                                  case 1:
+                                    item = 'MT';
+                                    selec = 'machine';
+                                    break;
+                                  case 2:
+                                    item = 'Egg';
+                                    selec = 'egg';
+                                    break;
+                                  case 3:
+                                    item = 'Tutor';
+                                    selec = 'tutor';
+                                    break;
+                                }
+
+                                return Container(
+                                  margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
+                                      borderRadius: BorderRadius.circular(20.0),
+                                      onTap: () {
+                                        setState(() {
+                                          selectedMethod = selec;
+                                        });
+                                      },
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          borderRadius: const BorderRadius.all(Radius.circular(15)),
+                                          color: selectedMethod == selec ?
+                                          widget.color.withOpacity(0.5)
+                                          : widget.color,
+                                        ),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 20,
+                                          vertical: 10,
+                                        ),
+                                        child: Text(
+                                          item,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                      ],
+                    ),
+                  ),
+                ),
+
+                Container(
+                  padding: const EdgeInsets.all(10.0),
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.vertical,
+                    child: DataTable(
+                      columnSpacing: 10,
+                      horizontalMargin: 10,
+                      dataRowHeight: 60,
+                      columns: const [
+                        DataColumn(label: Text('Move')),
+                        DataColumn(label: Text('Power')),
+                        DataColumn(label: Text('Acurrency')),
+                        DataColumn(label: Text('PP')),
+                      ],
+                      rows: widget.pokemon.moves
+                          .where((move) => move.learnMethod == selectedMethod)
+                          .map(
+                            (move) => DataRow(
+                          cells: [
+                            DataCell(
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  SizedBox(height: 10),
+                                  Text(capitalize(move.name)),
+                                  SizedBox(height: 5),
+                                  _buildTypeBox(move.type, getColorForType([move.type])),
+                                ],
+                              ),
+                            ),
+                            DataCell(
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  SizedBox(height: 10),
+                                  Text(move.power == -1 ? '-' : capitalize(move.power.toString())),
+                                  SizedBox(height: 5),
+                                ],
+                              ),
+                            ),
+                            DataCell(
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  SizedBox(height: 10),
+                                  Text(move.accuracy == -1 ? '-' : capitalize(move.accuracy.toString())),
+                                  SizedBox(height: 5),
+                                  _buildDamageBox(move.damageClass),
+                                ],
+                              ),
+                            ),
+                            DataCell(
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  SizedBox(height: 10),
+                                  Text(move.pp == -1 ? '-' : capitalize(move.pp.toString())),
+                                  SizedBox(height: 5),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                          .toList(),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         );
+
+
+
       case 3: // HABILIDADES
         return Container(
           height: MediaQuery.of(context).size.height * 0.4,
@@ -347,6 +521,84 @@ class _DetailsScreenState extends State<DetailsScreen> {
         return Container();
     }
   }
+}
+
+// Método para construir el rectángulo de daño
+Widget _buildDamageBox(String damageClass) {
+  Color color;
+  if(damageClass == 'physical'){
+    color = Colors.redAccent;
+  }else if(damageClass == 'special'){
+    color = Colors.deepPurpleAccent;
+  }else{
+    color = Colors.orangeAccent;
+  }
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(8),
+      gradient: LinearGradient(
+        colors: [
+          color.withOpacity(0.8),
+          color.withOpacity(0.3),
+        ],
+      ),
+    ),
+    child: Row(
+      children: [
+         const Text(
+          'Damage',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(width: 5),
+        Text(
+          capitalize(damageClass),
+          style: TextStyle(
+            color: color,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+// Método para construir el rectángulo del tipo
+Widget _buildTypeBox(String type, Color color) {
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(8),
+      gradient: LinearGradient(
+        colors: [
+          color.withOpacity(0.8),
+          color.withOpacity(0.5),
+        ],
+      ),
+    ),
+    child: Row(
+      children: [
+        const Text(
+          'Type',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(width: 5),
+        Text(
+          capitalize(type),
+          style: TextStyle(
+            color: color,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 class AbilityCard extends StatefulWidget {

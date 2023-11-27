@@ -1,4 +1,5 @@
 import '../database/poke_database.dart';
+import 'Move.dart';
 import 'Stats.dart';
 
 class Pokemon {
@@ -12,8 +13,7 @@ class Pokemon {
   final String category;
   final String description;
   final Stats stats;
-
-
+  late final List<Move> moves;
 
   Pokemon({
     required this.id,
@@ -26,6 +26,7 @@ class Pokemon {
     required this.category,
     required this.description,
     required this.stats,
+    required this.moves,
 
   });
 
@@ -37,7 +38,7 @@ class Pokemon {
     return abilities;
   }
 
-  factory Pokemon.fromJson(Map<String, dynamic> json, List<Ability> listAbilities, String category, String description, Stats stats) {
+  factory Pokemon.fromJson(Map<String, dynamic> json, List<Ability> listAbilities, String category, String description, Stats stats, List<Move> moves) {
     var typeList = (json['types'] as List)
         .map((typeData) {
       if (typeData is Map<String, dynamic>) {
@@ -63,7 +64,7 @@ class Pokemon {
       category: category,
       description: description,
       stats: stats,
-
+      moves: moves,
     );
   }
 }
