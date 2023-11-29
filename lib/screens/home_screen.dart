@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:path/path.dart';
+import 'package:pokedex_proyecto_final/screens/game_menu_bar.dart';
 import '../Entities/Pokemon.dart';
 import '../database/poke_database.dart';
 import '../Entities/Stats.dart';
@@ -144,6 +145,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  Image.asset(
+                    'images/logo_pokedex.png', // Reemplaza 'tu_imagen.png' con la ruta de tu imagen
+                    width: 50, // Ajusta el tamaño de la imagen según sea necesario
+                    height: 50,
+                  ),
                   const Text(
                     "Pokedex",
                     style: TextStyle(
@@ -158,7 +164,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       IconButton(
                         icon: const Icon(Icons.gamepad, color: Colors.blue),
                         onPressed: () {
-                          // Lógica del botón de juego
+                          Navigator.push(context, MaterialPageRoute(
+                            builder: (context) => MenuMinijuegos(),
+                          ));
                         },
                       ),
                       const SizedBox(width: 40), // Espacio entre el icono de juego y el de filtro

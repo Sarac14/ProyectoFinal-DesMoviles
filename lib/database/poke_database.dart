@@ -283,6 +283,43 @@ class PokeDatabase {
     }
   }
 
+  Future<String?> getPokemonImage(String pokemonName) async {
+    final db = await database;
+    final List<Map<String, dynamic>> result = await db.query(
+      'pokemon',
+      where: 'name = ?',
+      whereArgs: [pokemonName],
+    );
+
+    if (result.isNotEmpty) {
+      // Suponemos que la columna 'image' contiene la URL de la imagen del Pokémon.
+      final imageUrl = result[0]['image'] as String?;
+      print("pokemon database $pokemonName");
+      return imageUrl;
+
+    } else {
+      // Devuelve una URL de imagen por defecto si el Pokémon no se encuentra en la base de datos.
+      return 'https://www.pokemon.com/static-assets/app/static3/img/og-default-image.jpeg';
+    }
+  }
+
+
+  Future<List<String>> getAllPokemonNames() async {
+    final db = await database;
+    final List<Map<String, dynamic>> pokemons = await db.query('pokemon');
+
+    if (pokemons.isEmpty) {
+      print('No pokemons found in the database.');
+      return [];
+    } else {
+      List<String> pokemonNames = [];
+      pokemons.forEach((pokemon) {
+        pokemonNames.add(pokemon['name']);
+      });
+      return pokemonNames;
+    }
+  }
+
   Future<void> printAllFavoritePokemons() async {
     final db = await database;
     final List<Map<String, dynamic>> favoritePokemons =
