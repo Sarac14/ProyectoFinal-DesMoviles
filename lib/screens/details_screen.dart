@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../Entities/Pokemon.dart';
+import '../database/poke_database.dart';
 import '../widgets/StatsChart.dart';
 import 'home_screen.dart';
 
@@ -18,10 +19,14 @@ class DetailsScreen extends StatefulWidget {
 class _DetailsScreenState extends State<DetailsScreen> {
   int selectedSection = 0;
   String selectedMethod = 'level-up';
+  bool _shouldReloadMoves = true;
+  Set<int> favoritePokemons = <int>{};
+
 
   @override
   void initState() {
     super.initState();
+    loadFavoritePokemons();
   }
 
   @override
@@ -88,9 +93,22 @@ class _DetailsScreenState extends State<DetailsScreen> {
             top: 75,
             right: 15,
             child: IconButton(
-              icon: const Icon(Icons.favorite_border, color: Colors.white),
+              // Verificar si el Pokémon actual es un favorito para cambiar el ícono.
+              icon: favoritePokemons.contains(widget.pokemon.id)
+                  ? const Icon(Icons.favorite, color: Colors.red)
+                  : const Icon(Icons.favorite_border_rounded, color: Colors.white),
               onPressed: () {
-               // _openFavoritePokemonScreen(context);
+                setState(() {
+                  // Verificar si el Pokémon actual es un favorito para cambiar el ícono.
+                  if (favoritePokemons.contains(widget.pokemon.id)) {
+                    agregarFavoritePokemon(widget.pokemon.id); // Función para quitar de favoritos
+                    favoritePokemons.remove(widget.pokemon.id);
+                  } else {
+                    agregarFavoritePokemon(widget.pokemon.id); // Función para agregar a favoritos
+                    favoritePokemons.add(widget.pokemon.id);
+                  }
+                  PokeDatabase.instance.printAllFavoritePokemons();
+                });
               },
             ),
           ),
@@ -316,183 +334,199 @@ class _DetailsScreenState extends State<DetailsScreen> {
 
 
       case 2: // MOVES
-        print(widget.pokemon.moves.where((move) => move.learnMethod == selectedMethod));
+        // print(widget.pokemon.moves.where((move) => move.learnMethod == selectedMethod));
         print(selectedMethod);
-        return Expanded(
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(30.0),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(15),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.5),
-                          spreadRadius: 2,
-                          blurRadius: 7,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      children: [
-                        const SizedBox(height: 10),
-                        const Text(
-                          "Learning Methods",
-                          style: TextStyle(
-                            color: Colors.black38,
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 5),
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(20.0),
-                          child: SizedBox(
-                            height: 60.0,
-                            child: ListView.builder(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: 4,
-                              itemBuilder: (BuildContext context, int index) {
-                                String item = '';
-                                String selec = '';
-                                switch (index) {
-                                  case 0:
-                                    item = 'Level up';
-                                    selec = 'level-up';
-                                    break;
-                                  case 1:
-                                    item = 'MT';
-                                    selec = 'machine';
-                                    break;
-                                  case 2:
-                                    item = 'Egg';
-                                    selec = 'egg';
-                                    break;
-                                  case 3:
-                                    item = 'Tutor';
-                                    selec = 'tutor';
-                                    break;
-                                }
+        return FutureBuilder<void>(
+            future: widget.pokemon.moves.isEmpty || _shouldReloadMoves ? widget.pokemon.loadMoves(selectedMethod) : null,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator());
+              }
 
-                                return Container(
-                                  margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
-                                  child: Material(
-                                    color: Colors.transparent,
-                                    child: InkWell(
-                                      borderRadius: BorderRadius.circular(20.0),
-                                      onTap: () {
-                                        setState(() {
-                                          selectedMethod = selec;
-                                        });
-                                      },
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          borderRadius: const BorderRadius.all(Radius.circular(15)),
-                                          color: selectedMethod == selec ?
-                                          widget.color.withOpacity(0.5)
-                                          : widget.color,
-                                        ),
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 20,
-                                          vertical: 10,
-                                        ),
-                                        child: Text(
-                                          item,
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                      ],
-                    ),
-                  ),
-                ),
+              if (snapshot.hasError) {
+                return Center(child: Text('Error al cargar movimientos'));
+              }
 
-                Container(
-                  padding: const EdgeInsets.all(10.0),
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.vertical,
-                    child: DataTable(
-                      columnSpacing: 10,
-                      horizontalMargin: 10,
-                      dataRowHeight: 60,
-                      columns: const [
-                        DataColumn(label: Text('Move')),
-                        DataColumn(label: Text('Power')),
-                        DataColumn(label: Text('Acurrency')),
-                        DataColumn(label: Text('PP')),
-                      ],
-                      rows: widget.pokemon.moves
-                          .where((move) => move.learnMethod == selectedMethod)
-                          .map(
-                            (move) => DataRow(
-                          cells: [
-                            DataCell(
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  SizedBox(height: 10),
-                                  Text(capitalize(move.name)),
-                                  SizedBox(height: 5),
-                                  _buildTypeBox(move.type, getColorForType([move.type])),
-                                ],
-                              ),
-                            ),
-                            DataCell(
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  SizedBox(height: 10),
-                                  Text(move.power == -1 ? '-' : capitalize(move.power.toString())),
-                                  SizedBox(height: 5),
-                                ],
-                              ),
-                            ),
-                            DataCell(
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  SizedBox(height: 10),
-                                  Text(move.accuracy == -1 ? '-' : capitalize(move.accuracy.toString())),
-                                  SizedBox(height: 5),
-                                  _buildDamageBox(move.damageClass),
-                                ],
-                              ),
-                            ),
-                            DataCell(
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  SizedBox(height: 10),
-                                  Text(move.pp == -1 ? '-' : capitalize(move.pp.toString())),
-                                  SizedBox(height: 5),
-                                ],
-                              ),
+              // Agregar esta línea para asegurarse de que los movimientos se hayan recargado
+              _shouldReloadMoves = false;
+            return Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(30.0),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(15),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.5),
+                              spreadRadius: 2,
+                              blurRadius: 7,
+                              offset: const Offset(0, 3),
                             ),
                           ],
                         ),
-                      )
-                          .toList(),
+                        child: Column(
+                          children: [
+                            const SizedBox(height: 10),
+                            const Text(
+                              "Learning Methods",
+                              style: TextStyle(
+                                color: Colors.black38,
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 5),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(20.0),
+                              child: SizedBox(
+                                height: 60.0,
+                                child: ListView.builder(
+                                  scrollDirection: Axis.horizontal,
+                                  itemCount: 4,
+                                  itemBuilder: (BuildContext context, int index) {
+                                    String item = '';
+                                    String selec = '';
+                                    switch (index) {
+                                      case 0:
+                                        item = 'Level up';
+                                        selec = 'level-up';
+                                        break;
+                                      case 1:
+                                        item = 'MT';
+                                        selec = 'machine';
+                                        break;
+                                      case 2:
+                                        item = 'Egg';
+                                        selec = 'egg';
+                                        break;
+                                      case 3:
+                                        item = 'Tutor';
+                                        selec = 'tutor';
+                                        break;
+                                    }
+
+                                    return Container(
+                                      margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
+                                      child: Material(
+                                        color: Colors.transparent,
+                                        child: InkWell(
+                                          borderRadius: BorderRadius.circular(20.0),
+                                          onTap: () {
+                                            setState(() {
+                                              selectedMethod = selec;
+                                              _shouldReloadMoves = true;
+                                            });
+                                          },
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              borderRadius: const BorderRadius.all(Radius.circular(15)),
+                                              color: selectedMethod == selec ?
+                                              widget.color.withOpacity(0.5)
+                                              : widget.color,
+                                            ),
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 20,
+                                              vertical: 10,
+                                            ),
+                                            child: Text(
+                                              item,
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
+
+                    Container(
+                      padding: const EdgeInsets.all(10.0),
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.vertical,
+                        child: DataTable(
+                          columnSpacing: 10,
+                          horizontalMargin: 10,
+                          dataRowHeight: 60,
+                          columns: const [
+                            DataColumn(label: Text('Move')),
+                            DataColumn(label: Text('Power')),
+                            DataColumn(label: Text('Acurrency')),
+                            DataColumn(label: Text('PP')),
+                          ],
+                          rows: widget.pokemon.moves
+                              //.where((move) => move.learnMethod == selectedMethod)
+                              .map(
+                                (move) => DataRow(
+                              cells: [
+                                DataCell(
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      SizedBox(height: 10),
+                                      Text(capitalize(move.name)),
+                                      SizedBox(height: 5),
+                                      _buildTypeBox(move.type, getColorForType([move.type])),
+                                    ],
+                                  ),
+                                ),
+                                DataCell(
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      SizedBox(height: 10),
+                                      Text(move.power == -1 ? '-' : capitalize(move.power.toString())),
+                                      SizedBox(height: 5),
+                                    ],
+                                  ),
+                                ),
+                                DataCell(
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      SizedBox(height: 10),
+                                      Text(move.accuracy == -1 ? '-' : capitalize(move.accuracy.toString())),
+                                      SizedBox(height: 5),
+                                      _buildDamageBox(move.damageClass),
+                                    ],
+                                  ),
+                                ),
+                                DataCell(
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      SizedBox(height: 10),
+                                      Text(move.pp == -1 ? '-' : capitalize(move.pp.toString())),
+                                      SizedBox(height: 5),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                              .toList(),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ),
+              ),
+            );
+          }
         );
 
 
@@ -520,6 +554,14 @@ class _DetailsScreenState extends State<DetailsScreen> {
       default:
         return Container();
     }
+  }
+
+  Future<void> loadFavoritePokemons() async {
+    final favoriteList = await PokeDatabase.instance.getFavoritePokemons();
+    setState(() {
+      favoritePokemons =
+      Set<int>.from(favoriteList.map((pokemon) => pokemon.id));
+    });
   }
 }
 

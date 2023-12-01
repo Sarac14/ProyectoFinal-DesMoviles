@@ -25,7 +25,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool isFavorite = false;
   static const _pageSize = 20;
   final PagingController<int, PokemonCard> _pagingController =
-      PagingController(firstPageKey: 0);
+  PagingController(firstPageKey: 0);
   final TextEditingController searchController = TextEditingController();
   String? selectedType;
 
@@ -118,10 +118,148 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     var width = MediaQuery.of(context).size.width;
     var height = MediaQuery.of(context).size.height;
+    loadFavoritePokemons();
+
 
     return Scaffold(
       body: Stack(
         children: [
+
+          Positioned(
+            top: 188,
+            height: height-30,
+            width: width,
+            child: PagedGridView<int, PokemonCard>(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 1.4,
+              ),
+              pagingController: _pagingController,
+              builderDelegate: PagedChildBuilderDelegate<PokemonCard>(
+                  itemBuilder: (context, pokemon, index) {
+                    var type = pokemon.types.first;
+                    return InkWell(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 5, horizontal: 5),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: getColorForType(pokemon.types),
+                            borderRadius:
+                            const BorderRadius.all(Radius.circular(20)),
+                          ),
+                          child: Stack(
+                            children: [
+                              Positioned(
+                                  bottom: -10,
+                                  right: -10,
+                                  child: Image.asset(
+                                    'images/pokeball.png',
+                                    height: 100,
+                                    fit: BoxFit.fitHeight,
+                                  )),
+                              Positioned(
+                                top: 20,
+                                left: 10,
+                                child: Text(
+                                  capitalize(pokemon.name),
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                              Positioned(
+                                top: 20,
+                                right: 10,
+                                child: Text(
+                                  pokemon.id.toString(),
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                              Positioned(
+                                top: 45,
+                                left: 20,
+                                child: Container(
+                                  decoration: const BoxDecoration(
+                                    borderRadius:
+                                    BorderRadius.all(Radius.circular(20)),
+                                    color: Colors.black26,
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(
+                                        left: 8.0, right: 8.0, top: 4, bottom: 4),
+                                    child: Text(
+                                      capitalize(type.toString()),
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Positioned(
+                                left: 5,
+                                bottom: 10,
+                                child: IconButton(
+                                  // Verificar si el Pokémon actual es un favorito para cambiar el ícono.
+                                  icon: favoritePokemons.contains(pokemon.id)
+                                      ? const Icon(Icons.favorite, color: Colors.red)
+                                      : const Icon(Icons.favorite_border_rounded, color: Colors.white),
+                                  onPressed: () {
+                                    setState(() {
+                                      // Verificar si el Pokémon actual es un favorito para cambiar el ícono.
+                                      if (favoritePokemons.contains(pokemon.id)) {
+                                        agregarFavoritePokemon(pokemon
+                                            .id); // Función para quitar de favoritos
+                                        favoritePokemons.remove(pokemon.id);
+                                      } else {
+                                        agregarFavoritePokemon(pokemon
+                                            .id); // Función para agregar a favoritos
+                                        favoritePokemons.add(pokemon.id);
+                                      }
+                                      PokeDatabase.instance
+                                          .printAllFavoritePokemons();
+                                    });
+                                  },
+                                ),
+                              ),
+                              Positioned(
+                                bottom: 5,
+                                right: 5,
+                                child: Hero(
+                                  tag: 'pokemon-${pokemon.id}',
+                                  child: CachedNetworkImage(
+                                    imageUrl: pokemon.imageUrl,
+                                    placeholder: (context, url) =>
+                                    const CircularProgressIndicator(),
+                                    errorWidget: (context, url, error) =>
+                                    const Icon(Icons.error),
+                                    height: 90,
+                                    fit: BoxFit.fitHeight,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      onTap: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => GifViewer(pokemonCard: pokemon,
+                                    color: getColorForType(pokemon.types))));
+                      },
+                    );
+                  }),
+            ),
+          ),
           Positioned(
             top: 0,
             left: 0,
@@ -200,141 +338,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
-          Positioned(
-            top: 188,
-            height: height-30,
-            width: width,
-            child: PagedGridView<int, PokemonCard>(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                childAspectRatio: 1.4,
-              ),
-              pagingController: _pagingController,
-              builderDelegate: PagedChildBuilderDelegate<PokemonCard>(
-                  itemBuilder: (context, pokemon, index) {
-                var type = pokemon.types.first;
-                return InkWell(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 5, horizontal: 5),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: getColorForType(pokemon.types),
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(20)),
-                      ),
-                      child: Stack(
-                        children: [
-                          Positioned(
-                              bottom: -10,
-                              right: -10,
-                              child: Image.asset(
-                                'images/pokeball.png',
-                                height: 100,
-                                fit: BoxFit.fitHeight,
-                              )),
-                          Positioned(
-                            top: 20,
-                            left: 10,
-                            child: Text(
-                              capitalize(pokemon.name),
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                          Positioned(
-                            top: 20,
-                            right: 10,
-                            child: Text(
-                              pokemon.id.toString(),
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                          Positioned(
-                            top: 45,
-                            left: 20,
-                            child: Container(
-                              decoration: const BoxDecoration(
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(20)),
-                                color: Colors.black26,
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.only(
-                                    left: 8.0, right: 8.0, top: 4, bottom: 4),
-                                child: Text(
-                                  capitalize(type.toString()),
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          Positioned(
-                            left: 5,
-                            bottom: 10,
-                            child: IconButton(
-                              // Verificar si el Pokémon actual es un favorito para cambiar el ícono.
-                              icon: favoritePokemons.contains(pokemon.id)
-                                  ? const Icon(Icons.favorite, color: Colors.red)
-                                  : const Icon(Icons.favorite_border_rounded, color: Colors.white),
-                              onPressed: () {
-                                setState(() {
-                                  // Verificar si el Pokémon actual es un favorito para cambiar el ícono.
-                                  if (favoritePokemons.contains(pokemon.id)) {
-                                    agregarFavoritePokemon(pokemon
-                                        .id); // Función para quitar de favoritos
-                                    favoritePokemons.remove(pokemon.id);
-                                  } else {
-                                    agregarFavoritePokemon(pokemon
-                                        .id); // Función para agregar a favoritos
-                                    favoritePokemons.add(pokemon.id);
-                                  }
-                                  PokeDatabase.instance
-                                      .printAllFavoritePokemons();
-                                });
-                              },
-                            ),
-                          ),
-                          Positioned(
-                            bottom: 5,
-                            right: 5,
-                            child: Hero(
-                              tag: 'pokemon-${pokemon.id}',
-                              child: CachedNetworkImage(
-                                imageUrl: pokemon.imageUrl,
-                                placeholder: (context, url) =>
-                                    const CircularProgressIndicator(),
-                                errorWidget: (context, url, error) =>
-                                    const Icon(Icons.error),
-                                height: 90,
-                                fit: BoxFit.fitHeight,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  onTap: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) => GifViewer(pokemonCard: pokemon,
-                                color: getColorForType(pokemon.types))));
-                  },
-                );
-              }),
-            ),
-          ),
         ],
       ),
     );
@@ -400,7 +403,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final favoriteList = await PokeDatabase.instance.getFavoritePokemons();
     setState(() {
       favoritePokemons =
-          Set<int>.from(favoriteList.map((pokemon) => pokemon.id));
+      Set<int>.from(favoriteList.map((pokemon) => pokemon.id));
     });
   }
 }
@@ -465,42 +468,9 @@ Future<Pokemon> fetchPokemonDetailsData(String pokemonName) async {
       baseSpeed: statsData[5]['base_stat'],
     );
 
-    // Obtener la lista de movimientos y sus detalles
-    var movesUrl = data['moves'];
-    List<Move> movesList = [];
-    int nMove = 0;
 
-    for (var moveData in movesUrl) {
-      var moveResponse = await http.get(Uri.parse(moveData['move']['url']));
-      var moveDetails = json.decode(moveResponse.body);
 
-      var moveName = moveDetails['name'];
-      var movePower = moveDetails['power'];
-      var movePP = moveDetails['pp'];
-      var moveAccuracy = moveDetails['accuracy'];
-      var moveType = moveDetails['type']['name'];
-      var moveDamageClass = moveDetails['damage_class']['name'];
-      var moveLearnMethod = data['moves'][nMove]['version_group_details'][0]['move_learn_method']['name'];
-      /*int level = 0;
-      if(moveLearnMethod == 'level-up'){
-        level = data['moves'][nMove]['version_group_details'][0]['move_learn_method']['level_learned_at'];
-      }*/
-
-      movesList.add(Move(
-        name: moveName,
-        power: movePower ?? -1,
-        pp: movePP ?? -1,
-        accuracy: moveAccuracy ?? -1,
-        type: moveType,
-        damageClass: moveDamageClass,
-        learnMethod: moveLearnMethod,
-       // level: level ?? -1,
-      ));
-
-      nMove = nMove + 1;
-    }
-
-    Pokemon pokemon = Pokemon.fromJson(data, abilitiesList, category, description, stats, movesList);
+    Pokemon pokemon = Pokemon.fromJson(data, abilitiesList, category, description, stats, []);
     return pokemon;
   } catch (e, stackTrace) {
     print("Error in fetchPokemonDetailsData: $e");
