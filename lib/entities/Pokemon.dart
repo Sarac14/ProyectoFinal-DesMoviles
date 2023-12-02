@@ -168,21 +168,22 @@ class Pokemon {
 
 }
 
-
-
 class Ability {
   final String name;
   final String description;
+  final List<String> pokemonUseList;
 
   Ability({
     required this.name,
     required this.description,
+    required this.pokemonUseList,
   });
 
   factory Ability.fromJson(Map<String, dynamic> json) {
     return Ability(
-      name: json['name'] as String,
+      name: json['name' ] as String,
       description: json['description'] as String,
+      pokemonUseList: [],
     );
   }
 }

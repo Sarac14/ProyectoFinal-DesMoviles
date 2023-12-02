@@ -413,6 +413,30 @@ class PokeDatabase {
     }
   }
 
+  Future<List<PokemonCard>> searchMultiplePokemons(List<String> pokemonNames) async {
+    final db = await database;
+    List<PokemonCard> pokemons = [];
+
+    for (String name in pokemonNames) {
+      List<Map<String, dynamic>> results = await db.rawQuery(
+        'SELECT * FROM pokemon WHERE name LIKE ?',
+        ['$name%'],
+      );
+
+      for (var result in results) {
+        PokemonDB pokemon = PokemonDB(
+          id: result['id'] as int,
+          name: result['name'] as String,
+          url: result['url'] as String,
+          type: result['type'] as String,
+          image: result['image'] as String,
+        );
+        PokemonCard pokemonCard = PokemonCard.fromPokemonDB(pokemon);
+        pokemons.add(pokemonCard);
+      }
+    }
+    return pokemons;
+  }
 
   Future<List<String>> getFavoritePokemonUrls() async {
     final db = await database;

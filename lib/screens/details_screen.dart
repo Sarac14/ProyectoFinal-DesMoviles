@@ -1,9 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
+import '../Entities/Evolution.dart';
 import '../Entities/Pokemon.dart';
 import '../database/poke_database.dart';
-import '../Entities/Evolution.dart';
 import '../widgets/StatsChart.dart';
 import 'home_screen.dart';
 
@@ -22,7 +22,6 @@ class _DetailsScreenState extends State<DetailsScreen> {
   String selectedMethod = 'level-up';
   bool _shouldReloadMoves = true;
   Set<int> favoritePokemons = <int>{};
-
 
   @override
   void initState() {
@@ -45,10 +44,10 @@ class _DetailsScreenState extends State<DetailsScreen> {
               gradient: LinearGradient(
                 colors: [
                   widget.color,
-                 Colors.white54,
-                 //widget.color.withOpacity(0.5),
+                  Colors.white54,
+                  //widget.color.withOpacity(0.5),
                   Colors.white24,
-                 // widget.color,
+                  // widget.color,
                 ],
               ),
             ),
@@ -97,15 +96,18 @@ class _DetailsScreenState extends State<DetailsScreen> {
               // Verificar si el Pokémon actual es un favorito para cambiar el ícono.
               icon: favoritePokemons.contains(widget.pokemon.id)
                   ? const Icon(Icons.favorite, color: Colors.red)
-                  : const Icon(Icons.favorite_border_rounded, color: Colors.white),
+                  : const Icon(Icons.favorite_border_rounded,
+                      color: Colors.white),
               onPressed: () {
                 setState(() {
                   // Verificar si el Pokémon actual es un favorito para cambiar el ícono.
                   if (favoritePokemons.contains(widget.pokemon.id)) {
-                    agregarFavoritePokemon(widget.pokemon.id); // Función para quitar de favoritos
+                    agregarFavoritePokemon(
+                        widget.pokemon.id); // Función para quitar de favoritos
                     favoritePokemons.remove(widget.pokemon.id);
                   } else {
-                    agregarFavoritePokemon(widget.pokemon.id); // Función para agregar a favoritos
+                    agregarFavoritePokemon(
+                        widget.pokemon.id); // Función para agregar a favoritos
                     favoritePokemons.add(widget.pokemon.id);
                   }
                   PokeDatabase.instance.printAllFavoritePokemons();
@@ -144,7 +146,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                       buildSectionButton(3, "SKILLS"),
                     ],
                   ),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
                   buildSectionContent(selectedSection),
                 ],
               ),
@@ -178,25 +180,23 @@ class _DetailsScreenState extends State<DetailsScreen> {
             selectedSection = sectionIndex;
           });
         },
-        child: Container(
-          child: Column(
-            children: [
-              Text(
-                sectionName,
-                style: const TextStyle(
-                  color: Colors.black,
-                  fontSize: 14,
-                ),
+        child: Column(
+          children: [
+            Text(
+              sectionName,
+              style: const TextStyle(
+                color: Colors.black,
+                fontSize: 14,
               ),
-              Container(
-                width: 40,
-                height: 2,
-                color: selectedSection == sectionIndex
-                    ? widget.color
-                    : Colors.transparent,
-              ),
-            ],
-          ),
+            ),
+            Container(
+              width: 40,
+              height: 2,
+              color: selectedSection == sectionIndex
+                  ? widget.color
+                  : Colors.transparent,
+            ),
+          ],
         ),
       ),
     );
@@ -206,7 +206,8 @@ class _DetailsScreenState extends State<DetailsScreen> {
     switch (sectionIndex) {
       case 0: // ABOUT
         String category = widget.pokemon.category?.split(' ')[0] ?? '';
-        String descriptionWithoutNewlines = widget.pokemon.description.replaceAll('\n', ' ');
+        String descriptionWithoutNewlines =
+            widget.pokemon.description.replaceAll('\n', ' ');
         return Expanded(
           child: SingleChildScrollView(
             child: Container(
@@ -215,7 +216,8 @@ class _DetailsScreenState extends State<DetailsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 15, horizontal: 10),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(15),
@@ -230,7 +232,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                     ),
                     child: Wrap(
                       alignment: WrapAlignment.center,
-                        children: [
+                      children: [
                         Text(
                           descriptionWithoutNewlines,
                           style: const TextStyle(
@@ -254,7 +256,8 @@ class _DetailsScreenState extends State<DetailsScreen> {
                         padding: const EdgeInsets.symmetric(horizontal: 10),
                         child: Container(
                           decoration: BoxDecoration(
-                            borderRadius: const BorderRadius.all(Radius.circular(15)),
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(15)),
                             color: widget.color.withOpacity(0.8),
                           ),
                           padding: const EdgeInsets.symmetric(
@@ -278,9 +281,11 @@ class _DetailsScreenState extends State<DetailsScreen> {
                     children: [
                       _buildInfoColumn('Category', category),
                       _buildSeparator(widget.color),
-                      _buildInfoColumn('Height', '${widget.pokemon.height / 10} M'),
+                      _buildInfoColumn(
+                          'Height', '${widget.pokemon.height / 10} M'),
                       _buildSeparator(widget.color),
-                      _buildInfoColumn('Weight', '${widget.pokemon.weight / 10} KG'),
+                      _buildInfoColumn(
+                          'Weight', '${widget.pokemon.weight / 10} KG'),
                     ],
                   ),
                   const SizedBox(height: 50),
@@ -335,211 +340,229 @@ class _DetailsScreenState extends State<DetailsScreen> {
         )
             : CircularProgressIndicator();
 
-
       case 2: // MOVES
         // print(widget.pokemon.moves.where((move) => move.learnMethod == selectedMethod));
         print(selectedMethod);
         return FutureBuilder<void>(
-            future: widget.pokemon.moves.isEmpty || _shouldReloadMoves ? widget.pokemon.loadMoves(selectedMethod) : null,
+            future: widget.pokemon.moves.isEmpty || _shouldReloadMoves
+                ? widget.pokemon.loadMoves(selectedMethod)
+                : null,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return Center(child: CircularProgressIndicator());
+                return const Center(child: CircularProgressIndicator());
               }
 
               if (snapshot.hasError) {
-                return Center(child: Text('Error al cargar movimientos'));
+                return const Center(child: Text('Error al cargar movimientos'));
               }
 
               // Agregar esta línea para asegurarse de que los movimientos se hayan recargado
               _shouldReloadMoves = false;
-            return Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(30.0),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(15),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.5),
-                              spreadRadius: 2,
-                              blurRadius: 7,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          children: [
-                            const SizedBox(height: 10),
-                            const Text(
-                              "Learning Methods",
-                              style: TextStyle(
-                                color: Colors.black38,
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
+              return Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(30.0),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(15),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.5),
+                                spreadRadius: 2,
+                                blurRadius: 7,
+                                offset: const Offset(0, 3),
                               ),
-                            ),
-                            const SizedBox(height: 5),
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(20.0),
-                              child: SizedBox(
-                                height: 60.0,
-                                child: ListView.builder(
-                                  scrollDirection: Axis.horizontal,
-                                  itemCount: 4,
-                                  itemBuilder: (BuildContext context, int index) {
-                                    String item = '';
-                                    String selec = '';
-                                    switch (index) {
-                                      case 0:
-                                        item = 'Level up';
-                                        selec = 'level-up';
-                                        break;
-                                      case 1:
-                                        item = 'MT';
-                                        selec = 'machine';
-                                        break;
-                                      case 2:
-                                        item = 'Egg';
-                                        selec = 'egg';
-                                        break;
-                                      case 3:
-                                        item = 'Tutor';
-                                        selec = 'tutor';
-                                        break;
-                                    }
+                            ],
+                          ),
+                          child: Column(
+                            children: [
+                              const SizedBox(height: 10),
+                              const Text(
+                                "Learning Methods",
+                                style: TextStyle(
+                                  color: Colors.black38,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 5),
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(20.0),
+                                child: SizedBox(
+                                  height: 60.0,
+                                  child: ListView.builder(
+                                    scrollDirection: Axis.horizontal,
+                                    itemCount: 4,
+                                    itemBuilder:
+                                        (BuildContext context, int index) {
+                                      String item = '';
+                                      String selec = '';
+                                      switch (index) {
+                                        case 0:
+                                          item = 'Level up';
+                                          selec = 'level-up';
+                                          break;
+                                        case 1:
+                                          item = 'MT';
+                                          selec = 'machine';
+                                          break;
+                                        case 2:
+                                          item = 'Egg';
+                                          selec = 'egg';
+                                          break;
+                                        case 3:
+                                          item = 'Tutor';
+                                          selec = 'tutor';
+                                          break;
+                                      }
 
-                                    return Container(
-                                      margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
-                                      child: Material(
-                                        color: Colors.transparent,
-                                        child: InkWell(
-                                          borderRadius: BorderRadius.circular(20.0),
-                                          onTap: () {
-                                            setState(() {
-                                              selectedMethod = selec;
-                                              _shouldReloadMoves = true;
-                                            });
-                                          },
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                              borderRadius: const BorderRadius.all(Radius.circular(15)),
-                                              color: selectedMethod == selec ?
-                                              widget.color.withOpacity(0.5)
-                                              : widget.color,
-                                            ),
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 20,
-                                              vertical: 10,
-                                            ),
-                                            child: Text(
-                                              item,
-                                              style: const TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.bold,
+                                      return Container(
+                                        margin: const EdgeInsets.symmetric(
+                                            vertical: 10, horizontal: 5),
+                                        child: Material(
+                                          color: Colors.transparent,
+                                          child: InkWell(
+                                            borderRadius:
+                                                BorderRadius.circular(20.0),
+                                            onTap: () {
+                                              setState(() {
+                                                selectedMethod = selec;
+                                                _shouldReloadMoves = true;
+                                              });
+                                            },
+                                            child: Container(
+                                              decoration: BoxDecoration(
+                                                borderRadius:
+                                                    const BorderRadius.all(
+                                                        Radius.circular(15)),
+                                                color: selectedMethod == selec
+                                                    ? widget.color
+                                                        .withOpacity(0.5)
+                                                    : widget.color,
+                                              ),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                horizontal: 20,
+                                                vertical: 10,
+                                              ),
+                                              child: Text(
+                                                item,
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
                                               ),
                                             ),
                                           ),
                                         ),
-                                      ),
-                                    );
-                                  },
+                                      );
+                                    },
+                                  ),
                                 ),
                               ),
-                            ),
-                            const SizedBox(height: 10),
-                          ],
+                              const SizedBox(height: 10),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-
-                    Container(
-                      padding: const EdgeInsets.all(10.0),
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.vertical,
-                        child: DataTable(
-                          columnSpacing: 10,
-                          horizontalMargin: 10,
-                          dataRowHeight: 60,
-                          columns: const [
-                            DataColumn(label: Text('Move')),
-                            DataColumn(label: Text('Power')),
-                            DataColumn(label: Text('Acurrency')),
-                            DataColumn(label: Text('PP')),
-                          ],
-                          rows: widget.pokemon.moves
-                              //.where((move) => move.learnMethod == selectedMethod)
-                              .map(
-                                (move) => DataRow(
-                              cells: [
-                                DataCell(
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      SizedBox(height: 10),
-                                      Text(capitalize(move.name)),
-                                      SizedBox(height: 5),
-                                      _buildTypeBox(move.type, getColorForType([move.type])),
+                      Container(
+                        padding: const EdgeInsets.all(10.0),
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.vertical,
+                          child: DataTable(
+                            columnSpacing: 10,
+                            horizontalMargin: 10,
+                            dataRowHeight: 60,
+                            columns: const [
+                              DataColumn(label: Text('Move')),
+                              DataColumn(label: Text('Power')),
+                              DataColumn(label: Text('Acurrency')),
+                              DataColumn(label: Text('PP')),
+                            ],
+                            rows: widget.pokemon.moves
+                                //.where((move) => move.learnMethod == selectedMethod)
+                                .map(
+                                  (move) => DataRow(
+                                    cells: [
+                                      DataCell(
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            const SizedBox(height: 10),
+                                            Text(capitalize(move.name)),
+                                            const SizedBox(height: 5),
+                                            _buildTypeBox(move.type,
+                                                getColorForType([move.type])),
+                                          ],
+                                        ),
+                                      ),
+                                      DataCell(
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            const SizedBox(height: 10),
+                                            Text(move.power == -1
+                                                ? '-'
+                                                : capitalize(
+                                                    move.power.toString())),
+                                            const SizedBox(height: 5),
+                                          ],
+                                        ),
+                                      ),
+                                      DataCell(
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            const SizedBox(height: 10),
+                                            Text(move.accuracy == -1
+                                                ? '-'
+                                                : capitalize(
+                                                    move.accuracy.toString())),
+                                            const SizedBox(height: 5),
+                                            _buildDamageBox(move.damageClass),
+                                          ],
+                                        ),
+                                      ),
+                                      DataCell(
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            const SizedBox(height: 10),
+                                            Text(move.pp == -1
+                                                ? '-'
+                                                : capitalize(
+                                                    move.pp.toString())),
+                                            const SizedBox(height: 5),
+                                          ],
+                                        ),
+                                      ),
                                     ],
                                   ),
-                                ),
-                                DataCell(
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      SizedBox(height: 10),
-                                      Text(move.power == -1 ? '-' : capitalize(move.power.toString())),
-                                      SizedBox(height: 5),
-                                    ],
-                                  ),
-                                ),
-                                DataCell(
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      SizedBox(height: 10),
-                                      Text(move.accuracy == -1 ? '-' : capitalize(move.accuracy.toString())),
-                                      SizedBox(height: 5),
-                                      _buildDamageBox(move.damageClass),
-                                    ],
-                                  ),
-                                ),
-                                DataCell(
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      SizedBox(height: 10),
-                                      Text(move.pp == -1 ? '-' : capitalize(move.pp.toString())),
-                                      SizedBox(height: 5),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          )
-                              .toList(),
+                                )
+                                .toList(),
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            );
-          }
-        );
-
-
+              );
+            });
 
       case 3: // HABILIDADES
-        return Container(
-          height: MediaQuery.of(context).size.height * 0.4,
+        return SizedBox(
+          height: MediaQuery.of(context).size.height * 0.54,
           child: SingleChildScrollView(
             child: Container(
-              padding: const EdgeInsets.all(20.0),
+              padding: const EdgeInsets.all(10.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: widget.pokemon.getAbilities().map((ability) {
@@ -547,6 +570,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                     color: widget.color,
                     abilityName: capitalize(ability.name),
                     abilityDescription: ability.description,
+                    pokemonCanUse: ability.pokemonUseList,
                   );
                 }).toList(),
               ),
@@ -563,7 +587,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
     final favoriteList = await PokeDatabase.instance.getFavoritePokemons();
     setState(() {
       favoritePokemons =
-      Set<int>.from(favoriteList.map((pokemon) => pokemon.id));
+          Set<int>.from(favoriteList.map((pokemon) => pokemon.id));
     });
   }
 }
@@ -640,11 +664,11 @@ Widget evolutionContainer(Evolution evolution) {
 // Método para construir el rectángulo de daño
 Widget _buildDamageBox(String damageClass) {
   Color color;
-  if(damageClass == 'physical'){
+  if (damageClass == 'physical') {
     color = Colors.redAccent;
-  }else if(damageClass == 'special'){
+  } else if (damageClass == 'special') {
     color = Colors.deepPurpleAccent;
-  }else{
+  } else {
     color = Colors.orangeAccent;
   }
   return Container(
@@ -660,7 +684,7 @@ Widget _buildDamageBox(String damageClass) {
     ),
     child: Row(
       children: [
-         const Text(
+        const Text(
           'Damage',
           style: TextStyle(
             color: Colors.white,
@@ -719,12 +743,14 @@ class AbilityCard extends StatefulWidget {
   final Color color;
   final String abilityName;
   final String abilityDescription;
+  final List<String> pokemonCanUse;
 
   const AbilityCard({
     Key? key,
     required this.color,
     required this.abilityName,
     required this.abilityDescription,
+    required this.pokemonCanUse,
   }) : super(key: key);
 
   @override
@@ -766,6 +792,22 @@ Widget _buildSeparator(Color color) {
 
 class _AbilityCardState extends State<AbilityCard> {
   bool isExpanded = false;
+  List<PokemonCard> pokemons = [];
+
+  @override
+  void initState() {
+    super.initState();
+    loadPokemons();
+  }
+
+  void loadPokemons() async {
+    // Suponiendo que searchMultiplePokemons es asíncrona
+    var pokemonCards = await PokeDatabase.instance
+        .searchMultiplePokemons(widget.pokemonCanUse);
+    setState(() {
+      pokemons = pokemonCards;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -782,36 +824,109 @@ class _AbilityCardState extends State<AbilityCard> {
               isExpanded = !isExpanded;
             });
           },
-          child: Container(
-            decoration: BoxDecoration(
-              color: widget.color,
-              borderRadius: BorderRadius.circular(10.0),
-            ),
-            padding: EdgeInsets.all(8.0),
-            child: Column(
-              children: [
-                Text(
-                  widget.abilityName,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+          child: Column(
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  color: widget.color,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(10.0),
+                    topRight: Radius.circular(10.0),
                   ),
-                  textAlign: TextAlign.center,
                 ),
-                if (isExpanded)
-                  Container(
-                    padding: const EdgeInsets.only(top: 8),
-                    child: SingleChildScrollView(
+                padding: const EdgeInsets.all(4.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Expanded(
                       child: Text(
-                        widget.abilityDescription,
-                        style: const TextStyle(fontSize: 16),
+                        widget.abilityName,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: Colors.white,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                     ),
+                    const Icon(
+                      Icons.error_outline,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                  ],
+                ),
+              ),
+              if (isExpanded)
+                SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.all(14.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white54,
+                            borderRadius: BorderRadius.circular(10.0),
+                          ),
+                          padding: const EdgeInsets.all(8),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Center(
+                                child: Text(
+                                  "Description",
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.grey,
+                                      fontWeight: FontWeight.bold
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                widget.abilityDescription,
+                                style: const TextStyle(
+                                    fontSize: 14, color: Colors.black),
+                                textAlign: TextAlign.justify,
+                              ),
+                             // const SizedBox(height: 10),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        const Center(
+                          child: Text(
+                            "Pokemon with this ability",
+                            style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.grey,
+                                fontWeight: FontWeight.bold
+                            ),
+                          ),
+                        ),
+                        GridView.builder(
+
+                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            // Dos elementos por fila
+                            childAspectRatio: 3 / 2,
+                            // Ajusta la proporción según sea necesario
+                            crossAxisSpacing: 1,
+                            // Espaciado horizontal entre los elementos
+                            mainAxisSpacing: 1, // Espaciado vertical entre los elementos
+                          ),
+                          physics: const NeverScrollableScrollPhysics(),
+                          shrinkWrap: true,
+                          itemCount: pokemons.length,
+                          itemBuilder: (context, index) {
+                            return buildPokemonCard(pokemons[index]);
+                          },
+                        ),
+                      ],
+                    ),
                   ),
-              ],
-            ),
+                ),
+            ],
           ),
         ),
       ),
@@ -819,12 +934,93 @@ class _AbilityCardState extends State<AbilityCard> {
   }
 }
 
+Widget buildPokemonCard(PokemonCard pokemon) {
+  return Card(
+    color: getColorForType(pokemon.types), // Reemplaza con el color que desees
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(15.0),
+    ),
+    child: SizedBox(
+      height: 200, // Ajusta esta altura según sea necesario
+      width: double.infinity, // Esto hará que tome el ancho completo disponible
+      child: Stack(
+        children: [
+          Positioned(
+              bottom: -10,
+              right: -10,
+              child: Image.asset(
+                'images/pokeball.png',
+                height: 100,
+                fit: BoxFit.fitHeight,
+              )),
+          Positioned(
+            top: 20,
+            left: 10,
+            child: Text(
+              capitalize(pokemon.name),
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+                color: Colors.white,
+              ),
+            ),
+          ),
+          Positioned(
+            top: 20,
+            right: 10,
+            child: Text(
+              pokemon.id.toString(),
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+                color: Colors.white,
+              ),
+            ),
+          ),
+          Positioned(
+            top: 45,
+            left: 20,
+            child: Container(
+              decoration: const BoxDecoration(
+                borderRadius: BorderRadius.all(Radius.circular(20)),
+                color: Colors.black26,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.only(
+                    left: 8.0, right: 8.0, top: 4, bottom: 4),
+                child: Text(
+                  capitalize(pokemon.types.first),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 5,
+            right: 5,
+            child: CachedNetworkImage(
+              imageUrl: pokemon.imageUrl,
+              placeholder: (context, url) => const CircularProgressIndicator(),
+              errorWidget: (context, url, error) => const Icon(Icons.error),
+              height: 80,
+              fit: BoxFit.fitHeight,
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
 class AbilityDetailsScreen extends StatelessWidget {
   final String abilityName;
   final String abilityDescription;
 
-  AbilityDetailsScreen(
-      {required this.abilityName, required this.abilityDescription});
+  const AbilityDetailsScreen(
+      {super.key, required this.abilityName, required this.abilityDescription});
 
   @override
   Widget build(BuildContext context) {

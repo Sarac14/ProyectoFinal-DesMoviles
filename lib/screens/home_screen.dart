@@ -432,12 +432,21 @@ Future<Pokemon> fetchPokemonDetailsData(String pokemonName) async {
         orElse: () => null,
       );
 
+      List<String> pokemonCanUseList = [];
+      if (abilitiesData['pokemon'] != null) {
+        for (var pokemon in abilitiesData['pokemon']) {
+          var pokemonName = pokemon['pokemon']['name'];
+          pokemonCanUseList.add(pokemonName);
+        }
+      }
+      print(pokemonCanUseList);
+
       var abilitiesName = abilitiesData['name'];
       var abilitiesDescription = englishDescription != null
           ? englishDescription['effect']
           : "Descripción no disponible en inglés";
 
-      abilitiesList.add(Ability(name: abilitiesName, description: abilitiesDescription));
+      abilitiesList.add(Ability(name: abilitiesName, description: abilitiesDescription, pokemonUseList: pokemonCanUseList));
     }
 
     // Obtener la URL de la especie
