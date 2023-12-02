@@ -26,7 +26,9 @@ class _GifViewerState extends State<GifViewer> {
 
     // Simula un tiempo de carga para propósitos de demostración
     Future.delayed(const Duration(seconds: 2), () {
-      pokemonFetchData(widget.pokemonCard.name).then((pokemonDetails) {
+      pokemonFetchData(widget.pokemonCard.name).then((pokemonDetails) async {
+        await pokemonDetails.loadEvolutionChain();
+
         // Utiliza Navigator.pushReplacement para reemplazar la pantalla actual
         Navigator.pushReplacement(
           context,

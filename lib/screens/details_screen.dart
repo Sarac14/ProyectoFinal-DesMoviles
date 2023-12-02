@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../Entities/Pokemon.dart';
 import '../database/poke_database.dart';
+import '../Entities/Evolution.dart';
 import '../widgets/StatsChart.dart';
 import 'home_screen.dart';
 
@@ -322,15 +323,17 @@ class _DetailsScreenState extends State<DetailsScreen> {
         );
 
 
-      case 1: // EVOLUTIONS
-        return Container(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            children: [
-              // Aqui van las evoluciones
-            ],
+      case 1: // Evoluciones
+        return widget.pokemon.evolutionChain.isNotEmpty
+            ? Expanded(
+          child: SingleChildScrollView(
+            child: Container(
+              padding: const EdgeInsets.all(20.0),
+              child: createEvolutionWidget(widget.pokemon.evolutionChain.first),
+            ),
           ),
-        );
+        )
+            : CircularProgressIndicator();
 
 
       case 2: // MOVES
@@ -564,6 +567,75 @@ class _DetailsScreenState extends State<DetailsScreen> {
     });
   }
 }
+
+Widget createEvolutionWidget(Evolution evolution) {
+  return Row(
+    mainAxisAlignment: MainAxisAlignment.center,
+    crossAxisAlignment: CrossAxisAlignment.center,
+    children: [
+      evolutionContainer(evolution),
+      evolution.evolvesTo.isEmpty ? Container() : const Icon(Icons.arrow_forward),
+      Column(
+        children: evolution.evolvesTo.map((e) => createEvolutionWidget(e)).toList(),
+      ),
+    ],
+  );
+}
+
+Widget evolutionContainer(Evolution evolution) {
+  return GestureDetector(
+    onTap: () {
+
+      print("Presionado: ${evolution.name}");
+    },
+    child: Container(
+      margin: const EdgeInsets.all(10.0),
+      alignment: Alignment.center,
+      height: 85,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // Imagen de la Pokébola en el fondo
+          Positioned(
+            child: Image.asset(
+              'images/imgPokeball2.png',
+              height: 150,
+              fit: BoxFit.cover,
+            ),
+          ),
+          // Imagen del Pokémon en el frente
+          CachedNetworkImage(
+            imageUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${evolution.id}.png',
+            placeholder: (context, url) => const CircularProgressIndicator(),
+            errorWidget: (context, url, error) => const Icon(Icons.error),
+            height: 70,
+            fit: BoxFit.fitHeight,
+          ),
+          // Nombre del Pokémon y nivel mínimo, si se desea
+          Positioned(
+            bottom: 0,
+            child: Column(
+              children: [
+                Container(
+                  color: Colors.white,
+                  child: Text(
+                    capitalize(evolution.name),
+                    style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                if (evolution.minLevel != null)
+                  Text("Nivel mínimo: ${evolution.minLevel}"),
+              ],
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+
+
 
 // Método para construir el rectángulo de daño
 Widget _buildDamageBox(String damageClass) {

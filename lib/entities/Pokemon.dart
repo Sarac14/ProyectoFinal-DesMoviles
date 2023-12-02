@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import '../database/poke_database.dart';
+import 'Evolution.dart';
 import 'Move.dart';
 import 'Stats.dart';
 import 'package:http/http.dart' as http;
@@ -18,6 +19,8 @@ class Pokemon {
   final String description;
   final Stats stats;
   List<Move> moves;
+  late final List<Evolution> evolutionChain;
+
 
   Pokemon({
     required this.id,
@@ -30,8 +33,8 @@ class Pokemon {
     required this.category,
     required this.description,
     required this.stats,
-    // required List moves,
-    //required this.moves,
+
+
 
   }): moves = [];
 
@@ -73,100 +76,47 @@ class Pokemon {
     );
   }
 
+  Future<void> loadEvolutionChain() async {
+    try {
+      // Paso 1: Obtener la URL de la especie del Pokémon
+      var pokemonResponse = await http.get(Uri.parse('https://pokeapi.co/api/v2/pokemon/$name'));
+      var pokemonData = json.decode(pokemonResponse.body);
+      var speciesUrl = pokemonData['species']['url'];
 
-  // Future<void> loadMoves(String learnMethod) async {
-  //   try {
-  //
-  //     var pokemonUrl = "https://pokeapi.co/api/v2/pokemon/$name";
-  //     var response = await http.get(Uri.parse(pokemonUrl));
-  //     var data = json.decode(response.body);
-  //
-  //     // Obtener la lista de movimientos y sus detalles
-  //     var movesUrl = data['moves'];
-  //     List<Move> movesList = [];
-  //     int nMove = 0;
-  //
-  //     for (var moveData in movesUrl) {
-  //       var moveResponse = await http.get(Uri.parse(moveData['move']['url']));
-  //       var moveDetails = json.decode(moveResponse.body);
-  //
-  //       var moveName = moveDetails['name'];
-  //       var movePower = moveDetails['power'];
-  //       var movePP = moveDetails['pp'];
-  //       var moveAccuracy = moveDetails['accuracy'];
-  //       var moveType = moveDetails['type']['name'];
-  //       var moveDamageClass = moveDetails['damage_class']['name'];
-  //       var moveLearnMethod = data['moves'][nMove]['version_group_details'][0]['move_learn_method']['name'];
-  //       /*int level = 0;
-  //       if(moveLearnMethod == 'level-up'){
-  //         level = data['moves'][nMove]['version_group_details'][0]['move_learn_method']['level_learned_at'];
-  //       }*/
-  //
-  //       movesList.add(Move(
-  //         name: moveName,
-  //         power: movePower ?? -1,
-  //         pp: movePP ?? -1,
-  //         accuracy: moveAccuracy ?? -1,
-  //         type: moveType,
-  //         damageClass: moveDamageClass,
-  //         learnMethod: moveLearnMethod,
-  //        // level: level ?? -1,
-  //       ));
-  //
-  //       nMove = nMove + 1;
-  //     }
-  //
-  //
-  //     this.moves = movesList; // Actualizar la lista de movimientos del Pokémon
-  //   } catch (e) {
-  //     print("Error loading moves: $e");
-  //     // Manejo de errores
-  //   }
-  // }
+      // Paso 2: Obtener la URL de la cadena de evolución
+      var speciesResponse = await http.get(Uri.parse(speciesUrl));
+      var speciesData = json.decode(speciesResponse.body);
+      var evolutionChainUrl = speciesData['evolution_chain']['url'];
 
-  // Future<void> loadMoves(String learnMethod) async {
-  //   try {
-  //     var pokemonUrl = "https://pokeapi.co/api/v2/pokemon/$name";
-  //     var response = await http.get(Uri.parse(pokemonUrl));
-  //     var data = json.decode(response.body);
-  //
-  //     var movesData = data['moves'] as List;
-  //     List<Move> movesList = [];
-  //
-  //     for (var moveData in movesData) {
-  //       var moveVersionDetails = moveData['version_group_details'] as List;
-  //       var isLearnMethodMatch = moveVersionDetails.any((versionDetail) =>
-  //       versionDetail['move_learn_method']['name'] == learnMethod);
-  //
-  //       if (isLearnMethodMatch) {
-  //         var moveResponse = await http.get(Uri.parse(moveData['move']['url']));
-  //         var moveDetails = json.decode(moveResponse.body);
-  //
-  //         var moveName = moveDetails['name'];
-  //         var movePower = moveDetails['power'];
-  //         var movePP = moveDetails['pp'];
-  //         var moveAccuracy = moveDetails['accuracy'];
-  //         var moveType = moveDetails['type']['name'];
-  //         var moveDamageClass = moveDetails['damage_class']['name'];
-  //
-  //         movesList.add(Move(
-  //           name: moveName,
-  //           power: movePower ?? -1,
-  //           pp: movePP ?? -1,
-  //           accuracy: moveAccuracy ?? -1,
-  //           type: moveType,
-  //           damageClass: moveDamageClass,
-  //           learnMethod: learnMethod,
-  //         ));
-  //       }
-  //     }
-  //
-  //     this.moves = movesList; // Actualizar la lista de movimientos del Pokémon
-  //   } catch (e) {
-  //     print("Error loading moves: $e");
-  //     // Manejo de errores
-  //   }
-  // }
+      // Paso 3: Obtener la cadena de evolución
+      var evolutionResponse = await http.get(Uri.parse(evolutionChainUrl));
+      var evolutionData = json.decode(evolutionResponse.body);
+      var evolutionChainData = EvolutionChain.fromJson(evolutionData);
+
+      // Transformar la cadena de evolución en una lista de objetos Evolution
+      this.evolutionChain = _processEvolutionChain(evolutionChainData.chain);
+
+    } catch (e) {
+      print("Error loading evolution chain: $e");
+    }
+  }
+
+  // Método auxiliar para procesar la cadena de evolución
+  List<Evolution> _processEvolutionChain(Chain chain) {
+    List<Evolution> evolutions = [];
+    _addEvolutions(chain, evolutions);
+    return evolutions;
+  }
+
+  // Método recursivo para agregar evoluciones a la lista
+  void _addEvolutions(Chain chain, List<Evolution> evolutions) {
+    var evolution = Evolution.fromChain(chain);
+    evolutions.add(evolution);
+
+    for (var nextChain in chain.evolvesTo) {
+      _addEvolutions(nextChain, evolutions);
+    }
+  }
 
   Future<void> loadMoves(String learnMethod) async {
     try {
