@@ -340,6 +340,9 @@ class _DetailsScreenState extends State<DetailsScreen> {
         )
             : CircularProgressIndicator();
 
+
+
+
       case 2: // MOVES
         // print(widget.pokemon.moves.where((move) => move.learnMethod == selectedMethod));
         print(selectedMethod);
@@ -592,17 +595,58 @@ class _DetailsScreenState extends State<DetailsScreen> {
   }
 }
 
+
+
 Widget createEvolutionWidget(Evolution evolution) {
-  return Row(
-    mainAxisAlignment: MainAxisAlignment.center,
-    crossAxisAlignment: CrossAxisAlignment.center,
-    children: [
-      evolutionContainer(evolution),
-      evolution.evolvesTo.isEmpty ? Container() : const Icon(Icons.arrow_forward),
-      Column(
-        children: evolution.evolvesTo.map((e) => createEvolutionWidget(e)).toList(),
+  List<Widget> evolutionWidgets = [];
+
+  // Añade el contenedor del Pokémon actual.
+  evolutionWidgets.add(evolutionContainer(evolution));
+
+  // Si hay evoluciones, procesa cada una.
+  if (evolution.evolvesTo.isNotEmpty) {
+    // Añade una flecha solo si hay evoluciones.
+    evolutionWidgets.add(
+      const Padding(
+        padding: EdgeInsets.symmetric(vertical: 4.0),
+        child: Icon(Icons.arrow_downward, color: Colors.black),
       ),
-    ],
+    );
+
+    // Añade las evoluciones en una nueva fila.
+    if (evolution.evolvesTo.length > 4) {
+      evolutionWidgets.add(
+        Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 8.0, // Espacio horizontal entre los elementos
+          runSpacing: 8.0, // Espacio vertical entre las líneas
+          children: evolution.evolvesTo.map((nextEvolution) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4.0), // Espacio adicional entre los elementos
+              child: createEvolutionWidget(nextEvolution),
+            );
+          }).toList(),
+        ),
+      );
+    }
+    else {
+      evolutionWidgets.add(
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: evolution.evolvesTo.map((nextEvolution) {
+            // Crea un widget para cada evolución.
+            return Expanded(
+              child: createEvolutionWidget(nextEvolution),
+            );
+          }).toList(),
+        ),
+      );
+    }
+  }
+
+  return Column(
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: evolutionWidgets,
   );
 }
 
@@ -632,7 +676,7 @@ Widget evolutionContainer(Evolution evolution) {
             imageUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${evolution.id}.png',
             placeholder: (context, url) => const CircularProgressIndicator(),
             errorWidget: (context, url, error) => const Icon(Icons.error),
-            height: 70,
+            height: 90,
             fit: BoxFit.fitHeight,
           ),
           // Nombre del Pokémon y nivel mínimo, si se desea
@@ -657,7 +701,6 @@ Widget evolutionContainer(Evolution evolution) {
     ),
   );
 }
-
 
 
 
