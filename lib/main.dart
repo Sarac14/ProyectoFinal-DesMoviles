@@ -7,18 +7,18 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   //await PokeDatabase.instance.insertPokemonsFromApi();
   //await PokeDatabase.instance.printAllPokemons();
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      // Muestra el splash screen al inicio.
-      home: SplashScreen(),
+      home: const SplashScreen(),
       routes: {
-        // Configura la pantalla principal.
-        '/home': (context) => HomeScreen(),
+        '/home': (context) => const HomeScreen(),
       },
     );
   }

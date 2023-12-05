@@ -12,13 +12,15 @@ import 'details_screen.dart';
 import 'home_screen.dart';
 
 class FavoritePokemonScreen extends StatefulWidget {
+  const FavoritePokemonScreen({super.key});
+
   @override
   _FavoritePokemonScreenState createState() => _FavoritePokemonScreenState();
 }
 
 class _FavoritePokemonScreenState extends State<FavoritePokemonScreen> {
   late Future<List<PokemonCard>> _favoritePokemonFuture;
-  Set<int> favoritePokemons = Set<int>();
+  Set<int> favoritePokemons = <int>{};
   bool isFavorite = false;
 
   @override
@@ -141,10 +143,9 @@ class _FavoritePokemonScreenState extends State<FavoritePokemonScreen> {
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           } else {
-            return Center(
+            return const Center(
                 child: Text('La lista de favoritos se encuentra vacia'));
           }
-          return Center(child: CircularProgressIndicator());
         },
       ),
     );

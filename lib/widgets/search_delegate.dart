@@ -69,7 +69,6 @@ class SearchPokemonDelegate extends SearchDelegate<PokemonCard> {
             itemCount: snapshot.data!.length,
             itemBuilder: (context, index) {
               final pokemon = snapshot.data![index];
-              var type = pokemon.types.first;
               Color cardColor = getColorForType(pokemon.types);
               return InkWell(
                 onTap: () {

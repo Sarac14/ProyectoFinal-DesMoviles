@@ -5,13 +5,14 @@ import '../Entities/Evolution.dart';
 import '../Entities/Pokemon.dart';
 import '../database/poke_database.dart';
 import '../widgets/StatsChart.dart';
+import '../widgets/animation.dart';
 import 'home_screen.dart';
 
 class DetailsScreen extends StatefulWidget {
   final Pokemon pokemon;
   final Color color;
 
-  DetailsScreen(this.pokemon, this.color);
+  const DetailsScreen(this.pokemon, this.color, {super.key});
 
   @override
   State<DetailsScreen> createState() => _DetailsScreenState();
@@ -338,7 +339,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
             ),
           ),
         )
-            : CircularProgressIndicator();
+            : const CircularProgressIndicator();
 
 
 
@@ -562,7 +563,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
 
       case 3: // HABILIDADES
         return SizedBox(
-          height: MediaQuery.of(context).size.height * 0.54,
+          height: MediaQuery.of(context).size.height * 0.53,
           child: SingleChildScrollView(
             child: Container(
               padding: const EdgeInsets.all(10.0),
@@ -580,7 +581,6 @@ class _DetailsScreenState extends State<DetailsScreen> {
             ),
           ),
         );
-
       default:
         return Container();
     }
@@ -962,7 +962,7 @@ class _AbilityCardState extends State<AbilityCard> {
                           shrinkWrap: true,
                           itemCount: pokemons.length,
                           itemBuilder: (context, index) {
-                            return buildPokemonCard(pokemons[index]);
+                            return buildPokemonCard(context, pokemons[index]);
                           },
                         ),
                       ],
@@ -977,17 +977,25 @@ class _AbilityCardState extends State<AbilityCard> {
   }
 }
 
-Widget buildPokemonCard(PokemonCard pokemon) {
-  return Card(
-    color: getColorForType(pokemon.types), // Reemplaza con el color que desees
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(15.0),
-    ),
-    child: SizedBox(
-      height: 200, // Ajusta esta altura según sea necesario
-      width: double.infinity, // Esto hará que tome el ancho completo disponible
-      child: Stack(
-        children: [
+Widget buildPokemonCard(BuildContext context, PokemonCard pokemon) {
+  return GestureDetector(
+      onTap: () {
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (_) => GifViewer(pokemonCard: pokemon,
+                    color: getColorForType(pokemon.types))));
+      },
+      child: Card(
+        color: getColorForType(pokemon.types), // Reemplaza con el color que desees
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15.0),
+        ),
+        child: SizedBox(
+          height: 200, // Ajusta esta altura según sea necesario
+          width: double.infinity, // Esto hará que tome el ancho completo disponible
+          child: Stack(
+            children: [
           Positioned(
               bottom: -10,
               right: -10,
@@ -1055,7 +1063,8 @@ Widget buildPokemonCard(PokemonCard pokemon) {
         ],
       ),
     ),
-  );
+  ),
+        );
 }
 
 class AbilityDetailsScreen extends StatelessWidget {

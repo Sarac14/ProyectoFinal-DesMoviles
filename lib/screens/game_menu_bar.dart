@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:pokedex_proyecto_final/games/game_1.dart';
 
 class MenuMinijuegos extends StatelessWidget {
+  const MenuMinijuegos({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Menú de Minijuegos'),
+        title: const Text('Menú de Minijuegos'),
         backgroundColor: Colors.purple, // Color personalizado para la AppBar
       ),
       body: Container(
@@ -35,7 +37,7 @@ class MenuMinijuegos extends StatelessWidget {
 
   Widget _buildGameTile(
       BuildContext context, String title, Widget gameScreen, String assetPath) {
-    return Container(
+    return SizedBox(
       width: MediaQuery.of(context).size.width * 0.9, // 90% del ancho de la pantalla
       height: 150, // Altura fija para la Card
       child: Card(

@@ -115,46 +115,6 @@ class PokeDatabase {
     return pokemons;
   }
 
-  Future<void> checkAndAddMissingPokemon() async {
-    var url = Uri.parse('https://pokeapi.co/api/v2/pokemon/?limit=1300');
-    var response = await http.get(url);
-
-    if (response.statusCode == 200) {
-      var data = jsonDecode(response.body);
-      List results = data['results'];
-
-      for (var result in results) {
-        var pokemonUrl = result['url'];
-        var pokemonResponse = await http.get(Uri.parse(pokemonUrl));
-        if (pokemonResponse.statusCode == 200) {
-          var pokemonData = jsonDecode(pokemonResponse.body);
-          var id = pokemonData['id'] as int;
-          var existingPokemon = await getPokemonById(id);
-          if (existingPokemon == null) {
-            var types = pokemonData['types'];
-            var typeName = types[0]['type']['name'] as String;
-            var imageUrl = pokemonData['sprites']['other']['official-artwork']
-                ['front_default'] as String;
-            imageUrl ??= pokemonData['sprites']['front_default'] as String;
-            print("id: $id");
-            PokemonDB pokemon = PokemonDB(
-              id: id,
-              name: result['name'],
-              url: result['url'],
-              type: typeName,
-              image: imageUrl,
-            );
-            await insertPokemon(pokemon);
-          }
-        } else {
-          print('Failed to load data for ${result['name']} from API');
-        }
-      }
-    } else {
-      print('Failed to load data from API');
-    }
-  }
-
   Future<PokemonDB?> getPokemonById(int id) async {
     final db = await database;
     List<Map<String, dynamic>> results = await db.query(
@@ -177,14 +137,17 @@ class PokeDatabase {
   }
 
   Future<void> insertPokemonsFromApi() async {
-    var url = Uri.parse('https://pokeapi.co/api/v2/pokemon/?limit=1294');
+    var url = Uri.parse('https://pokeapi.co/api/v2/pokemon/?limit=1017');
     var response = await http.get(url);
 
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
       List results = data['results'];
 
-      // Insertar los datos en la base de datos
+      final db = await database;
+
+      var batch = db.batch();
+
       for (var result in results) {
         var pokemonUrl = result['url'];
         var pokemonResponse = await http.get(Uri.parse(pokemonUrl));
@@ -194,9 +157,7 @@ class PokeDatabase {
           var typeName = types[0]['type']['name'];
           var imageUrl = pokemonData['sprites']['other']['official-artwork']
               ['front_default'] as String?;
-          if (imageUrl == null) {
-            imageUrl = pokemonData['sprites']['front_default'] as String?;
-          }
+          imageUrl ??= pokemonData['sprites']['front_default'] as String?;
 
           PokemonDB pokemon = PokemonDB(
             id: results.indexOf(result) + 1,
@@ -205,11 +166,15 @@ class PokeDatabase {
             type: typeName,
             image: imageUrl ?? '',
           );
-          await insertPokemon(pokemon);
+          batch.insert("pokemon",
+            pokemon.toMap(),
+            conflictAlgorithm: ConflictAlgorithm.replace,
+          );
         } else {
           print('Failed to load data for ${result['name']} from API');
         }
       }
+      await batch.commit().whenComplete(() {print("completado");});
     } else {
       print('Failed to load data from API');
     }

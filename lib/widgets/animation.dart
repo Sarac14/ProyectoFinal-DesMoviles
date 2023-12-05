@@ -24,40 +24,48 @@ class _GifViewerState extends State<GifViewer> {
   void initState() {
     super.initState();
 
-    // Simula un tiempo de carga para propósitos de demostración
-    Future.delayed(const Duration(seconds: 2), () {
-      pokemonFetchData(widget.pokemonCard.name).then((pokemonDetails) async {
-        await pokemonDetails.loadEvolutionChain();
+    pokemonFetchData(widget.pokemonCard.name).then((pokemonDetails) async {
+      await pokemonDetails.loadEvolutionChain();
 
-        // Utiliza Navigator.pushReplacement para reemplazar la pantalla actual
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (_) => DetailsScreen(
-              pokemonDetails,
-              widget.color,
-            ),
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => DetailsScreen(
+            pokemonDetails,
+            widget.color,
           ),
-        );
-      });
+        ),
+      );
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset(
-              charmanderGifPath,
-              width: 175,
-              height: 175,
-            ),
-            const SizedBox(height: 50),
-            const Text('Cargando...'),
-          ],
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.orange, // Color naranja en la parte superior
+              Colors.white,  // Color blanco en la parte inferior
+            ],
+          ),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Image.asset(
+                charmanderGifPath,
+                width: 175,
+                height: 175,
+              ),
+              const SizedBox(height: 50),
+              const Text('Cargando...'),
+            ],
+          ),
         ),
       ),
     );

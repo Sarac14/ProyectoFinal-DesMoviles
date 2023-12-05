@@ -264,7 +264,7 @@ class _HomeScreenState extends State<HomeScreen> {
             top: 0,
             left: 0,
             right: 0,
-            bottom: 680,
+            bottom: 600,
             child: Container(
               padding: const EdgeInsets.all(16),
               height: 150,
@@ -283,11 +283,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Image.asset(
-                    'images/logo_pokedex.png', // Reemplaza 'tu_imagen.png' con la ruta de tu imagen
-                    width: 50, // Ajusta el tamaño de la imagen según sea necesario
-                    height: 50,
-                  ),
                   const Text(
                     "Pokedex",
                     style: TextStyle(

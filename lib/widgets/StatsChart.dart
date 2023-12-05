@@ -4,7 +4,7 @@ import '../Entities/Stats.dart';
 class StatsChart extends StatelessWidget {
   final Stats stats;
 
-  StatsChart({required this.stats});
+  const StatsChart({super.key, required this.stats});
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +23,7 @@ class StatsChart extends StatelessWidget {
   Widget _buildStatBar(String statName, int value, Color color) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Container(
+      child: SizedBox(
         width: double.infinity,
         child: Column(
           children: [

@@ -124,7 +124,7 @@ class _JuegoAdivinarPokemonState extends State<JuegoAdivinarPokemon> {
                 Image.asset('images/pikachu-triste.png'),
                 Text(
                   'Aciertos: $aciertos',
-                  style: TextStyle(fontSize: 18, color: Colors.white),
+                  style: const TextStyle(fontSize: 18, color: Colors.white),
                 ),
                 const Text(
                   '¿Qué te gustaría hacer?',
