@@ -335,7 +335,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
           child: SingleChildScrollView(
             child: Container(
               padding: const EdgeInsets.all(20.0),
-              child: createEvolutionWidget(widget.pokemon.evolutionChain.first),
+              child: createEvolutionWidget(widget.pokemon.evolutionChain.first, context),
             ),
           ),
         )
@@ -597,11 +597,11 @@ class _DetailsScreenState extends State<DetailsScreen> {
 
 
 
-Widget createEvolutionWidget(Evolution evolution) {
+Widget createEvolutionWidget(Evolution evolution, BuildContext context) {
   List<Widget> evolutionWidgets = [];
 
   // Añade el contenedor del Pokémon actual.
-  evolutionWidgets.add(evolutionContainer(evolution));
+  evolutionWidgets.add(evolutionContainer(evolution, context));
 
   // Si hay evoluciones, procesa cada una.
   if (evolution.evolvesTo.isNotEmpty) {
@@ -623,7 +623,7 @@ Widget createEvolutionWidget(Evolution evolution) {
           children: evolution.evolvesTo.map((nextEvolution) {
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4.0), // Espacio adicional entre los elementos
-              child: createEvolutionWidget(nextEvolution),
+              child: createEvolutionWidget(nextEvolution, context),
             );
           }).toList(),
         ),
@@ -636,7 +636,7 @@ Widget createEvolutionWidget(Evolution evolution) {
           children: evolution.evolvesTo.map((nextEvolution) {
             // Crea un widget para cada evolución.
             return Expanded(
-              child: createEvolutionWidget(nextEvolution),
+              child: createEvolutionWidget(nextEvolution, context),
             );
           }).toList(),
         ),
@@ -650,11 +650,25 @@ Widget createEvolutionWidget(Evolution evolution) {
   );
 }
 
-Widget evolutionContainer(Evolution evolution) {
+Widget evolutionContainer(Evolution evolution, BuildContext context) {
   return GestureDetector(
-    onTap: () {
-
-      print("Presionado: ${evolution.name}");
+    onTap: () async {
+      try {
+        var pokemonDetails = await PokeDatabase.instance.getPokemonByName(evolution.name);
+        if (pokemonDetails != null) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => GifViewer(
+                pokemonCard: pokemonDetails,
+                color: getColorForType(pokemonDetails.types),
+              ),
+            ),
+          );
+        }
+      } catch (e) {
+        print("Error al obtener detalles del Pokémon: $e");
+      }
     },
     child: Container(
       margin: const EdgeInsets.all(10.0),
@@ -663,7 +677,6 @@ Widget evolutionContainer(Evolution evolution) {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // Imagen de la Pokébola en el fondo
           Positioned(
             child: Image.asset(
               'images/imgPokeball2.png',
@@ -671,7 +684,6 @@ Widget evolutionContainer(Evolution evolution) {
               fit: BoxFit.cover,
             ),
           ),
-          // Imagen del Pokémon en el frente
           CachedNetworkImage(
             imageUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${evolution.id}.png',
             placeholder: (context, url) => const CircularProgressIndicator(),
@@ -679,7 +691,6 @@ Widget evolutionContainer(Evolution evolution) {
             height: 90,
             fit: BoxFit.fitHeight,
           ),
-          // Nombre del Pokémon y nivel mínimo, si se desea
           Positioned(
             bottom: 0,
             child: Column(
@@ -701,6 +712,7 @@ Widget evolutionContainer(Evolution evolution) {
     ),
   );
 }
+
 
 
 

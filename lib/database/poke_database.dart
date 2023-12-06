@@ -136,6 +136,29 @@ class PokeDatabase {
     }
   }
 
+  Future<PokemonCard?> getPokemonByName(String name) async {
+    final db = await database;
+    List<Map<String, dynamic>> results = await db.query(
+      'pokemon',
+      where: 'name = ?',
+      whereArgs: [name],
+    );
+
+    if (results.isEmpty) {
+      return null;
+    } else {
+      PokemonDB pokemonDB = PokemonDB(
+        id: results[0]['id'] as int,
+        name: results[0]['name'] as String,
+        url: results[0]['url'] as String,
+        type: results[0]['type'] as String,
+        image: results[0]['image'] as String,
+      );
+
+      return PokemonCard.fromPokemonDB(pokemonDB);
+    }
+  }
+
   Future<void> insertPokemonsFromApi() async {
     var url = Uri.parse('https://pokeapi.co/api/v2/pokemon/?limit=1017');
     var response = await http.get(url);
