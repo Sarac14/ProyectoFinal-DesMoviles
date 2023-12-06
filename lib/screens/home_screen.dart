@@ -126,7 +126,7 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
 
           Positioned(
-            top: 188,
+            top: 140,
             height: height-30,
             width: width,
             child: PagedGridView<int, PokemonCard>(
@@ -264,7 +264,7 @@ class _HomeScreenState extends State<HomeScreen> {
             top: 0,
             left: 0,
             right: 0,
-            bottom: 600,
+            bottom: 550,
             child: Container(
               padding: const EdgeInsets.all(16),
               height: 150,

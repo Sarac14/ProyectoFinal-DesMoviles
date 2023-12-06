@@ -1,6 +1,10 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import '../database/poke_database.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../screens/game_menu_bar.dart';
+
 
 class JuegoAdivinarPokemon extends StatefulWidget {
   const JuegoAdivinarPokemon({Key? key}) : super(key: key);
@@ -27,6 +31,7 @@ class _JuegoAdivinarPokemonState extends State<JuegoAdivinarPokemon> {
   @override
   void initState() {
     super.initState();
+    _cargarMarcaPersonal();
     _loadPokemonOptions();
   }
 
@@ -95,6 +100,7 @@ class _JuegoAdivinarPokemonState extends State<JuegoAdivinarPokemon> {
       aciertos++;
       if (aciertos > marcaPersonal) {
         marcaPersonal = aciertos;
+        _guardarMarcaPersonal();
       }
     } else {
       _mostrarDialogoFallo();
@@ -143,7 +149,8 @@ class _JuegoAdivinarPokemonState extends State<JuegoAdivinarPokemon> {
                 ),
                 TextButton(
                   onPressed: () {
-                    Navigator.of(context).popUntil((route) => route.isFirst);
+                    Navigator.of(context).pop();
+                    Navigator.of(context).pop();
                   },
                   child: const Text('Salir del Juego', style: TextStyle(color: Colors.white)),
                 ),
@@ -162,6 +169,19 @@ class _JuegoAdivinarPokemonState extends State<JuegoAdivinarPokemon> {
       child: Text(option, style: const TextStyle(fontSize: 18)),
     );
   }
+
+
+  Future<void> _guardarMarcaPersonal() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('marcaPersonal', marcaPersonal);
+  }
+
+  Future<void> _cargarMarcaPersonal() async {
+    final prefs = await SharedPreferences.getInstance();
+    marcaPersonal = prefs.getInt('marcaPersonal') ?? 0;
+  }
+
+
 
   @override
   Widget build(BuildContext context) {

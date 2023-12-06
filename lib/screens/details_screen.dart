@@ -154,7 +154,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
             ),
           ),
           Positioned(
-            top: (height * 0.18),
+            top: (height * 0.15),
             left: (width / 2) - 100,
             child: Hero(
               tag: 'pokemon-${widget.pokemon.id}',
@@ -163,7 +163,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                 placeholder: (context, url) =>
                     const CircularProgressIndicator(),
                 errorWidget: (context, url, error) => const Icon(Icons.error),
-                height: 200,
+                height: 190,
                 fit: BoxFit.fitHeight,
               ),
             ),
@@ -563,7 +563,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
 
       case 3: // HABILIDADES
         return SizedBox(
-          height: MediaQuery.of(context).size.height * 0.53,
+          height: MediaQuery.of(context).size.height * 0.525,
           child: SingleChildScrollView(
             child: Container(
               padding: const EdgeInsets.all(10.0),
