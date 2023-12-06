@@ -92,6 +92,17 @@ class _DetailsScreenState extends State<DetailsScreen> {
           ),
           Positioned(
             top: 75,
+            right: 60,
+            child: IconButton(
+              icon: const Icon(Icons.home, color: Colors.white),
+              onPressed: () {
+                // Aquí puedes definir la acción al presionar el botón, por ejemplo:
+                Navigator.of(context).push(MaterialPageRoute(builder: (context) => HomeScreen()));
+              },
+            ),
+          ),
+          Positioned(
+            top: 75,
             right: 15,
             child: IconButton(
               // Verificar si el Pokémon actual es un favorito para cambiar el ícono.
