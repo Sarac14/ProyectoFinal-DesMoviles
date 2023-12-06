@@ -243,11 +243,9 @@ class _DetailsScreenState extends State<DetailsScreen> {
                           softWrap: true,
                           overflow: TextOverflow.clip,
                           textAlign: TextAlign.center,
-
                         ),
                       ],
                     ),
-
                   ),
                   const SizedBox(height: 30),
                   Row(
@@ -328,21 +326,18 @@ class _DetailsScreenState extends State<DetailsScreen> {
           ),
         );
 
-
       case 1: // Evoluciones
         return widget.pokemon.evolutionChain.isNotEmpty
             ? Expanded(
-          child: SingleChildScrollView(
-            child: Container(
-              padding: const EdgeInsets.all(20.0),
-              child: createEvolutionWidget(widget.pokemon.evolutionChain.first, context),
-            ),
-          ),
-        )
+                child: SingleChildScrollView(
+                  child: Container(
+                    padding: const EdgeInsets.all(20.0),
+                    child: createEvolutionWidget(
+                        widget.pokemon.evolutionChain.first, context, widget.pokemon),
+                  ),
+                ),
+              )
             : const CircularProgressIndicator();
-
-
-
 
       case 2: // MOVES
         // print(widget.pokemon.moves.where((move) => move.learnMethod == selectedMethod));
@@ -595,13 +590,11 @@ class _DetailsScreenState extends State<DetailsScreen> {
   }
 }
 
-
-
-Widget createEvolutionWidget(Evolution evolution, BuildContext context) {
+Widget createEvolutionWidget(Evolution evolution, BuildContext context, pokemon) {
   List<Widget> evolutionWidgets = [];
 
   // Añade el contenedor del Pokémon actual.
-  evolutionWidgets.add(evolutionContainer(evolution, context));
+  evolutionWidgets.add(evolutionContainer(evolution, context, pokemon));
 
   // Si hay evoluciones, procesa cada una.
   if (evolution.evolvesTo.isNotEmpty) {
@@ -618,25 +611,24 @@ Widget createEvolutionWidget(Evolution evolution, BuildContext context) {
       evolutionWidgets.add(
         Wrap(
           alignment: WrapAlignment.center,
-          spacing: 8.0, // Espacio horizontal entre los elementos
-          runSpacing: 8.0, // Espacio vertical entre las líneas
+          spacing: 8.0,
+          runSpacing: 8.0,
           children: evolution.evolvesTo.map((nextEvolution) {
             return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4.0), // Espacio adicional entre los elementos
-              child: createEvolutionWidget(nextEvolution, context),
+              padding: const EdgeInsets.symmetric(horizontal: 4.0),
+              child: createEvolutionWidget(nextEvolution, context, pokemon),
             );
           }).toList(),
         ),
       );
-    }
-    else {
+    } else {
       evolutionWidgets.add(
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: evolution.evolvesTo.map((nextEvolution) {
             // Crea un widget para cada evolución.
             return Expanded(
-              child: createEvolutionWidget(nextEvolution, context),
+              child: createEvolutionWidget(nextEvolution, context, pokemon),
             );
           }).toList(),
         ),
@@ -650,25 +642,29 @@ Widget createEvolutionWidget(Evolution evolution, BuildContext context) {
   );
 }
 
-Widget evolutionContainer(Evolution evolution, BuildContext context) {
+Widget evolutionContainer(Evolution evolution, BuildContext context, Pokemon pokemon) {
   return GestureDetector(
     onTap: () async {
+    if (evolution.name != pokemon.name){
       try {
-        var pokemonDetails = await PokeDatabase.instance.getPokemonByName(evolution.name);
+        var pokemonDetails =
+            await PokeDatabase.instance.getPokemonByName(evolution.name);
         if (pokemonDetails != null) {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => GifViewer(
-                pokemonCard: pokemonDetails,
-                color: getColorForType(pokemonDetails.types),
-              ),
+              builder: (_) =>
+                  GifViewer(
+                    pokemonCard: pokemonDetails,
+                    color: getColorForType(pokemonDetails.types),
+                  ),
             ),
           );
         }
       } catch (e) {
         print("Error al obtener detalles del Pokémon: $e");
       }
+  }
     },
     child: Container(
       margin: const EdgeInsets.all(10.0),
@@ -685,7 +681,8 @@ Widget evolutionContainer(Evolution evolution, BuildContext context) {
             ),
           ),
           CachedNetworkImage(
-            imageUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${evolution.id}.png',
+            imageUrl:
+                'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${evolution.id}.png',
             placeholder: (context, url) => const CircularProgressIndicator(),
             errorWidget: (context, url, error) => const Icon(Icons.error),
             height: 90,
@@ -699,7 +696,8 @@ Widget evolutionContainer(Evolution evolution, BuildContext context) {
                   color: Colors.white,
                   child: Text(
                     capitalize(evolution.name),
-                    style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                        color: Colors.black, fontWeight: FontWeight.bold),
                   ),
                 ),
                 if (evolution.minLevel != null)
@@ -712,9 +710,6 @@ Widget evolutionContainer(Evolution evolution, BuildContext context) {
     ),
   );
 }
-
-
-
 
 // Método para construir el rectángulo de daño
 Widget _buildDamageBox(String damageClass) {
@@ -841,7 +836,7 @@ Widget _buildSeparator(Color color) {
     margin: const EdgeInsets.symmetric(horizontal: 25),
     height: 35,
     width: 1.5,
-    color: color, // Color del Pokémon
+    color: color,
   );
 }
 
@@ -933,8 +928,7 @@ class _AbilityCardState extends State<AbilityCard> {
                                   style: TextStyle(
                                       fontSize: 16,
                                       color: Colors.grey,
-                                      fontWeight: FontWeight.bold
-                                  ),
+                                      fontWeight: FontWeight.bold),
                                 ),
                               ),
                               const SizedBox(height: 6),
@@ -944,7 +938,7 @@ class _AbilityCardState extends State<AbilityCard> {
                                     fontSize: 14, color: Colors.black),
                                 textAlign: TextAlign.justify,
                               ),
-                             // const SizedBox(height: 10),
+                              // const SizedBox(height: 10),
                             ],
                           ),
                         ),
@@ -955,20 +949,20 @@ class _AbilityCardState extends State<AbilityCard> {
                             style: TextStyle(
                                 fontSize: 16,
                                 color: Colors.grey,
-                                fontWeight: FontWeight.bold
-                            ),
+                                fontWeight: FontWeight.bold),
                           ),
                         ),
                         GridView.builder(
-
-                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 2,
                             // Dos elementos por fila
                             childAspectRatio: 3 / 2,
                             // Ajusta la proporción según sea necesario
                             crossAxisSpacing: 1,
                             // Espaciado horizontal entre los elementos
-                            mainAxisSpacing: 1, // Espaciado vertical entre los elementos
+                            mainAxisSpacing:
+                                1, // Espaciado vertical entre los elementos
                           ),
                           physics: const NeverScrollableScrollPhysics(),
                           shrinkWrap: true,
@@ -991,92 +985,97 @@ class _AbilityCardState extends State<AbilityCard> {
 
 Widget buildPokemonCard(BuildContext context, PokemonCard pokemon) {
   return GestureDetector(
-      onTap: () {
-        Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (_) => GifViewer(pokemonCard: pokemon,
-                    color: getColorForType(pokemon.types))));
-      },
-      child: Card(
-        color: getColorForType(pokemon.types), // Reemplaza con el color que desees
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15.0),
-        ),
-        child: SizedBox(
-          height: 200, // Ajusta esta altura según sea necesario
-          width: double.infinity, // Esto hará que tome el ancho completo disponible
-          child: Stack(
-            children: [
-          Positioned(
-              bottom: -10,
-              right: -10,
-              child: Image.asset(
-                'images/pokeball.png',
-                height: 100,
-                fit: BoxFit.fitHeight,
-              )),
-          Positioned(
-            top: 20,
-            left: 10,
-            child: Text(
-              capitalize(pokemon.name),
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-                color: Colors.white,
+    onTap: () {
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (_) => GifViewer(
+                  pokemonCard: pokemon,
+                  color: getColorForType(pokemon.types))));
+    },
+    child: Card(
+      color: getColorForType(pokemon.types),
+      // Reemplaza con el color que desees
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15.0),
+      ),
+      child: SizedBox(
+        height: 200,
+        // Ajusta esta altura según sea necesario
+        width: double.infinity,
+        // Esto hará que tome el ancho completo disponible
+        child: Stack(
+          children: [
+            Positioned(
+                bottom: -10,
+                right: -10,
+                child: Image.asset(
+                  'images/pokeball.png',
+                  height: 100,
+                  fit: BoxFit.fitHeight,
+                )),
+            Positioned(
+              top: 20,
+              left: 10,
+              child: Text(
+                capitalize(pokemon.name),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                  color: Colors.white,
+                ),
               ),
             ),
-          ),
-          Positioned(
-            top: 20,
-            right: 10,
-            child: Text(
-              pokemon.id.toString(),
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-                color: Colors.white,
+            Positioned(
+              top: 20,
+              right: 10,
+              child: Text(
+                pokemon.id.toString(),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: Colors.white,
+                ),
               ),
             ),
-          ),
-          Positioned(
-            top: 45,
-            left: 20,
-            child: Container(
-              decoration: const BoxDecoration(
-                borderRadius: BorderRadius.all(Radius.circular(20)),
-                color: Colors.black26,
-              ),
-              child: Padding(
-                padding: const EdgeInsets.only(
-                    left: 8.0, right: 8.0, top: 4, bottom: 4),
-                child: Text(
-                  capitalize(pokemon.types.first),
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Colors.white,
+            Positioned(
+              top: 45,
+              left: 20,
+              child: Container(
+                decoration: const BoxDecoration(
+                  borderRadius: BorderRadius.all(Radius.circular(20)),
+                  color: Colors.black26,
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.only(
+                      left: 8.0, right: 8.0, top: 4, bottom: 4),
+                  child: Text(
+                    capitalize(pokemon.types.first),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-          Positioned(
-            bottom: 5,
-            right: 5,
-            child: CachedNetworkImage(
-              imageUrl: pokemon.imageUrl,
-              placeholder: (context, url) => const CircularProgressIndicator(),
-              errorWidget: (context, url, error) => const Icon(Icons.error),
-              height: 80,
-              fit: BoxFit.fitHeight,
+            Positioned(
+              bottom: 5,
+              right: 5,
+              child: CachedNetworkImage(
+                imageUrl: pokemon.imageUrl,
+                placeholder: (context, url) =>
+                    const CircularProgressIndicator(),
+                errorWidget: (context, url, error) => const Icon(Icons.error),
+                height: 80,
+                fit: BoxFit.fitHeight,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     ),
-  ),
-        );
+  );
 }
 
 class AbilityDetailsScreen extends StatelessWidget {
