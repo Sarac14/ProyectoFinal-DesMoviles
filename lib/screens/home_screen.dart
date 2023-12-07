@@ -185,22 +185,22 @@ class _HomeScreenState extends State<HomeScreen> {
                               Positioned(
                                 top: 45,
                                 left: 20,
-                                child: Row(
-                                  children: types.map((type) => Container(
-                                    decoration: const BoxDecoration(
-                                      borderRadius: BorderRadius.all(Radius.circular(20)),
-                                      color: Colors.black26,
-                                    ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.only(left: 8.0, right: 8.0, top: 4, bottom: 4),
-                                      child: Text(
-                                        capitalize(type.toString()),
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                        ),
+                                child: Container(
+                                  decoration: const BoxDecoration(
+                                    borderRadius:
+                                    BorderRadius.all(Radius.circular(20)),
+                                    color: Colors.black26,
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(
+                                        left: 8.0, right: 8.0, top: 4, bottom: 4),
+                                    child: Text(
+                                      capitalize(type.toString()),
+                                      style: const TextStyle(
+                                        color: Colors.white,
                                       ),
                                     ),
-                                  )).toList(),
+                                  ),
                                 ),
                               ),
                               Positioned(
